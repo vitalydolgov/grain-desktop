@@ -8,7 +8,7 @@ options:
 
 packages:
   Grain:
-    path: ../grain
+    path: Core
 
 targets:
   GrainDesktop:
