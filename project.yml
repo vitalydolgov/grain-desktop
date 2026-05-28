@@ -1,0 +1,31 @@
+name: GrainDesktop
+
+options:
+  bundleIdPrefix: com.github.vitalydolgov
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  Grain:
+    path: ../grain
+
+targets:
+  GrainDesktop:
+    type: application
+    platform: macOS
+    sources:
+      - Sources
+    dependencies:
+      - package: Grain
+        product: GrainDomain
+      - package: Grain
+        product: GrainApplication
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.GrainDesktop
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSUIElement: YES
+        SWIFT_VERSION: "6.0"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
