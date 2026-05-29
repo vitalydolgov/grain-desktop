@@ -3,21 +3,23 @@ import GrainDomain
 import GrainApplication
 
 struct MenuBarExtraView: View {
-    @Environment(TimerService.self) private var timerService
+    @Environment(TimerRuntime.self) private var timerRuntime
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TimerHeader(
-                displayTime: format(timerService.remainingTime),
-                currentRound: timerService.currentLocation?.round ?? 1,
-                phaseKind: timerService.currentLocation?.kind ?? .a,
-                partAName: timerService.settings.partAName,
-                partBName: timerService.settings.partBName
+                displayTime: format(timerRuntime.remainingTime),
+                currentRound: timerRuntime.currentLocation?.round ?? 1,
+                phaseKind: timerRuntime.currentLocation?.kind ?? .phaseA,
+                partAName: timerRuntime.plan.nameA,
+                partBName: timerRuntime.plan.nameB
             )
             Divider()
-            TimerActions(runState: timerService.runState)
+            TimerActions(runState: timerRuntime.state)
             Divider()
             TimerSettingsRow()
+            Divider()
+            MenuRow("Quit") { NSApp.terminate(nil) }
         }
         .frame(width: 200)
     }
@@ -45,7 +47,7 @@ private struct TimerHeader: View {
                 .foregroundStyle(.secondary)
             Spacer()
             if let kind = phaseKind {
-                Text(kind == .a ? partAName : partBName)
+                Text(kind == .phaseA ? partAName : partBName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -56,19 +58,19 @@ private struct TimerHeader: View {
 }
 
 private struct TimerActions: View {
-    @Environment(TimerService.self) private var timerService
-    let runState: RunState
+    @Environment(TimerRuntime.self) private var timerRuntime
+    let runState: SessionState
 
     var body: some View {
         switch runState {
         case .running:
-            MenuRow("Pause") { Task { try? await timerService.pause() } }
+            MenuRow("Pause") { Task { try? timerRuntime.pause() } }
         case .paused:
-            MenuRow("Resume") { Task { try? await timerService.resume() } }
+            MenuRow("Resume") { Task { try? timerRuntime.resume() } }
         case .idle, .completed:
-            MenuRow("Start") { Task { try? await timerService.start() } }
+            MenuRow("Start") { Task { try? timerRuntime.start() } }
         }
-        MenuRow("Reset") { Task { try? await timerService.reset() } }
+        MenuRow("Reset") { Task { timerRuntime.reset() } }
             .disabled(runState == .idle)
     }
 }

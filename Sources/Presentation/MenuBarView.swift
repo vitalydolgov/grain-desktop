@@ -1,11 +1,12 @@
 import SwiftUI
+import GrainDomain
 import GrainApplication
 
 struct MenuBarView: View {
-    @Environment(TimerService.self) private var timerService
+    @Environment(TimerRuntime.self) private var timerRuntime
 
     var body: some View {
-        Text(format(timerService.remainingTime))
+        Text(format(timerRuntime.remainingTime))
     }
 
     private func format(_ duration: Duration) -> String {
