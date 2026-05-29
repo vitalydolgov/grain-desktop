@@ -3,7 +3,7 @@ import GrainDomain
 import GrainApplication
 
 struct MenuBarView: View {
-    @Environment(TimerRuntime.self) private var timerRuntime
+    @Environment(TimerRuntimeBridge.self) private var timerRuntime
 
     var body: some View {
         Text(format(timerRuntime.remainingTime))

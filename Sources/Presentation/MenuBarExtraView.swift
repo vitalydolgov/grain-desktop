@@ -3,7 +3,7 @@ import GrainDomain
 import GrainApplication
 
 struct MenuBarExtraView: View {
-    @Environment(TimerRuntime.self) private var timerRuntime
+    @Environment(TimerRuntimeBridge.self) private var timerRuntime
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -58,19 +58,19 @@ private struct TimerHeader: View {
 }
 
 private struct TimerActions: View {
-    @Environment(TimerRuntime.self) private var timerRuntime
+    @Environment(TimerRuntimeBridge.self) private var timerRuntime
     let runState: SessionState
 
     var body: some View {
         switch runState {
         case .running:
-            MenuRow("Pause") { Task { try? timerRuntime.pause() } }
+            MenuRow("Pause") { timerRuntime.pause() }
         case .paused:
-            MenuRow("Resume") { Task { try? timerRuntime.resume() } }
+            MenuRow("Resume") { timerRuntime.resume() }
         case .idle, .completed:
-            MenuRow("Start") { Task { try? timerRuntime.start() } }
+            MenuRow("Start") { timerRuntime.start() }
         }
-        MenuRow("Reset") { Task { timerRuntime.reset() } }
+        MenuRow("Reset") { timerRuntime.reset() }
             .disabled(runState == .idle)
     }
 }
