@@ -1,6 +1,5 @@
 import SwiftUI
 import GrainDomain
-import GrainApplication
 
 @main
 struct GrainApp: App {

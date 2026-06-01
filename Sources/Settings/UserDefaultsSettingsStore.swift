@@ -1,6 +1,5 @@
 import Foundation
 import GrainDomain
-import GrainApplication
 
 actor UserDefaultsSettingsStore: SettingsStore {
     private let defaults: UserDefaults

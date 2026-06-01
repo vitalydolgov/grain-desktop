@@ -1,6 +1,5 @@
 import SwiftUI
 import GrainDomain
-import GrainApplication
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
