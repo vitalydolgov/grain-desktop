@@ -3,7 +3,7 @@ import GrainDomain
 import GrainApplication
 
 struct MenuBarExtraView: View {
-    @Environment(TimerRuntimeBridge.self) private var timerRuntime
+    @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -58,7 +58,7 @@ private struct TimerHeader: View {
 }
 
 private struct TimerActions: View {
-    @Environment(TimerRuntimeBridge.self) private var timerRuntime
+    @Environment(RuntimeProxy.self) private var timerRuntime
     let runState: SessionState
 
     var body: some View {

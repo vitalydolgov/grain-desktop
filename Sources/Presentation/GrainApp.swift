@@ -5,7 +5,7 @@ import GrainApplication
 @main
 struct GrainApp: App {
     @State private var settings = TimerSettings(store: UserDefaultsSettingsStore())
-    @State private var timerRuntime = TimerRuntimeBridge()
+    @State private var timerRuntime = RuntimeProxy()
 
     var body: some Scene {
         MenuBarExtra {

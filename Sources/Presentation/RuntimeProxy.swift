@@ -4,7 +4,7 @@ import GrainApplication
 
 @Observable
 @MainActor
-final class TimerRuntimeBridge {
+final class RuntimeProxy {
     var plan: SessionPlan = .default {
         didSet {
             let newPlan = plan
