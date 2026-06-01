@@ -6,7 +6,13 @@ struct MenuBarView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
-        Text(format(timerRuntime.remainingTime))
+        HStack(spacing: 8) {
+            Text(format(timerRuntime.remainingTime))
+        }
+    }
+
+    private var phaseImageName: String {
+        timerRuntime.currentLocation?.kind == .phaseB ? "b.circle" : "a.circle"
     }
 
     private func format(_ duration: Duration) -> String {

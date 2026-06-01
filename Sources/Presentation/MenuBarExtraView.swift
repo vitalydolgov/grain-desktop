@@ -47,9 +47,12 @@ private struct TimerHeader: View {
                 .foregroundStyle(.secondary)
             Spacer()
             if let kind = phaseKind {
-                Text(kind == .phaseA ? partAName : partBName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: kind == .phaseA ? "a.circle" : "b.circle")
+                    Text(kind == .phaseA ? partAName : partBName)
+                }
+                .font(.callout)
+                .foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 12)
