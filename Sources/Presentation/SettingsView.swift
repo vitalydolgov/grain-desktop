@@ -40,11 +40,25 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    HStack {
-                        Text("Total")
-                        Spacer()
+                    VStack {
                         Text(totalDurationText)
                             .font(.title2.monospaced())
+                        TimelineView(.periodic(from: .now, by: 60)) { context in
+                            Text("Ends at \(estimatedEndText(from: context.date))")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .overlay(alignment: .leading) {
+                        HStack {
+                            Text("Total")
+                                .font(.caption)
+                                .textCase(.uppercase)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            StartButton(plan: makePlan(), settings: settings, onSave: onSave)
+                        }
                     }
                 }
             }
@@ -57,13 +71,7 @@ struct SettingsView: View {
                 Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    let newPlan = SessionPlan(
-                        nameA: nameA,
-                        nameB: nameB,
-                        durationA: .seconds(UInt64(minutesA) * 60),
-                        durationB: .seconds(UInt64(minutesB) * 60),
-                        totalRounds: totalRounds
-                    )
+                    let newPlan = makePlan()
                     Task {
                         try? await settings.save(newPlan)
                         onSave(newPlan)
@@ -87,14 +95,52 @@ struct SettingsView: View {
         }
     }
 
-    private var totalDurationText: String {
-        let total = SessionPlan(
+    private func makePlan() -> SessionPlan {
+        SessionPlan(
             nameA: nameA, nameB: nameB,
             durationA: .seconds(UInt64(minutesA) * 60),
             durationB: .seconds(UInt64(minutesB) * 60),
             totalRounds: totalRounds
-        ).totalDuration
-        let totalMinutes = Int(total.seconds / 60)
-        return String(format: "%d:%02d'00", totalMinutes / 60, totalMinutes % 60)
+        )
+    }
+
+    private var totalDuration: Duration { makePlan().totalDuration }
+
+    private func estimatedEndText(from now: Date) -> String {
+        let end = now.addingTimeInterval(TimeInterval(totalDuration.seconds))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: end)
+    }
+
+    private var totalDurationText: String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .positional
+        return formatter.string(from: TimeInterval(totalDuration.seconds)) ?? ""
+    }
+}
+
+private struct StartButton: View {
+    let plan: SessionPlan
+    let settings: TimerSettings
+    let onSave: (SessionPlan) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @Environment(RuntimeProxy.self) private var timerRuntime
+
+    var body: some View {
+        Button {
+            Task {
+                try? await settings.save(plan)
+                onSave(plan)
+                timerRuntime.start()
+            }
+            dismiss()
+        } label: {
+            HStack(spacing: 4) {
+                Text("Start")
+                Image(systemName: "play.circle.fill")
+            }
+        }
     }
 }

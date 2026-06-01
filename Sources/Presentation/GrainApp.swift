@@ -20,6 +20,7 @@ struct GrainApp: App {
 
         Settings {
             SettingsView(settings: settings) { timerRuntime.plan = $0 }
+                .environment(timerRuntime)
         }
     }
 }
