@@ -9,27 +9,29 @@ The app follows Domain-Driven Design with four components. Dependencies point in
 ```mermaid
 flowchart TD
     P[Presentation\n<i>SwiftUI</i>]
+    R[Runtime Proxy\n<i>@MainActor</i>]
 
     subgraph ROW[" "]
-        A[Application\n<i>Runtime</i>]
+        A[Application\n<i>Commands + Runtime</i>]
         D[Domain]
         A --> D
     end
 
     S[Settings]
-    U[Settings Persistence\n<i>UserDefaults</i>]
+    U[Persistence\n<i>UserDefaults</i>]
 
-    P --> A
+    P --> R
+    R --> A
     P --> S
     S --> D
     U --> S
 ```
 
-The Grain library (at `Core/`) owns the Application and Domain layers. This repository provides the remaining three:
+The Grain library (at `Core/`) owns the **Application** and **Domain** layers. This repository provides the remaining three:
 
 - **Presentation** — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to the `@Observable` system on the main actor
 - **Settings** — store protocols and facades for timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`); depends on Domain for shared value types
-  - **Settings Persistence** — `UserDefaults`-backed implementations of the Settings store protocols
+  - Persistence — `UserDefaults`-backed implementations of the Settings store protocols
 
 ## Building
 

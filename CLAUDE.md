@@ -8,7 +8,7 @@ The app follows Domain-Driven Design with four components. Dependencies point in
 
 - **Presentation** — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
 - **Settings** — store protocols and facades for timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`); depends on Domain for shared value types
-  - **Settings Persistence** — `UserDefaults`-backed implementations of the Settings store protocols
+  - Persistence — `UserDefaults`-backed implementations of the Settings store protocols
 - **Application** — commands and runtime from the Grain library (`GrainApplication`)
 - **Domain** — aggregates and events from the Grain library (`GrainDomain`)
 
