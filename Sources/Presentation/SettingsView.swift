@@ -9,8 +9,11 @@ struct SettingsView: View {
     @State private var nameB = SessionPlan.default.nameB
     @State private var minutesB = 5
     @State private var selectedPart = 0
+    @State private var menuBarFormat: MenuBarLabelFormat = .time
     let settings: TimerSettings
+    let displaySettings: DisplaySettings
     let onSave: (SessionPlan) -> Void
+    let onDisplaySave: (MenuBarLabelFormat) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -38,6 +41,12 @@ struct SettingsView: View {
                         Stepper("Duration: \(minutesB) min", value: $minutesB, in: 1...60)
                     }
                 }
+                Section("Display") {
+                    Picker("Menu bar", selection: $menuBarFormat) {
+                        Text("Time").tag(MenuBarLabelFormat.time)
+                        Text("Icon").tag(MenuBarLabelFormat.icon)
+                    }
+                }
                 Section {
                     VStack {
                         Text(totalDurationText)
@@ -56,7 +65,14 @@ struct SettingsView: View {
                                 .textCase(.uppercase)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            StartButton(plan: makePlan(), settings: settings, onSave: onSave)
+                            StartButton(
+                                plan: makePlan(),
+                                settings: settings,
+                                displaySettings: displaySettings,
+                                menuBarFormat: menuBarFormat,
+                                onSave: onSave,
+                                onDisplaySave: onDisplaySave
+                            )
                         }
                     }
                 }
@@ -71,9 +87,12 @@ struct SettingsView: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
                     let newPlan = makePlan()
+                    let format = menuBarFormat
                     Task {
                         try? await settings.save(newPlan)
+                        try? await displaySettings.save(format)
                         onSave(newPlan)
+                        onDisplaySave(format)
                     }
                     dismiss()
                 }
@@ -91,6 +110,7 @@ struct SettingsView: View {
             minutesA = Int(plan.durationA.seconds / 60)
             minutesB = Int(plan.durationB.seconds / 60)
             totalRounds = plan.totalRounds
+            menuBarFormat = await displaySettings.load()
         }
     }
 
@@ -123,15 +143,21 @@ struct SettingsView: View {
 private struct StartButton: View {
     let plan: SessionPlan
     let settings: TimerSettings
+    let displaySettings: DisplaySettings
+    let menuBarFormat: MenuBarLabelFormat
     let onSave: (SessionPlan) -> Void
+    let onDisplaySave: (MenuBarLabelFormat) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         Button {
+            let format = menuBarFormat
             Task {
                 try? await settings.save(plan)
+                try? await displaySettings.save(format)
                 onSave(plan)
+                onDisplaySave(format)
                 timerRuntime.start()
             }
             dismiss()
