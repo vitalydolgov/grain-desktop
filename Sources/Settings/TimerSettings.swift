@@ -1,9 +1,9 @@
 import GrainDomain
 
 struct TimerSettings: Sendable {
-    private let store: any SettingsStore
+    private let store: any TimerSettingsStore
 
-    init(store: any SettingsStore) {
+    init(store: any TimerSettingsStore) {
         self.store = store
     }
 

@@ -4,6 +4,7 @@ import GrainApplication
 
 struct MenuBarExtraView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(\.phaseLabels) private var phaseLabels
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -11,8 +12,8 @@ struct MenuBarExtraView: View {
                 displayTime: format(timerRuntime.remainingTime),
                 currentRound: timerRuntime.currentLocation?.round ?? 1,
                 phaseKind: timerRuntime.currentLocation?.kind ?? .phaseA,
-                partAName: timerRuntime.plan.nameA,
-                partBName: timerRuntime.plan.nameB
+                partAName: phaseLabels.nameA,
+                partBName: phaseLabels.nameB
             )
             Divider()
             TimerActions(runState: timerRuntime.state)
@@ -27,6 +28,17 @@ struct MenuBarExtraView: View {
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
         return String(format: "%02d:%02d", total / 60, total % 60)
+    }
+}
+
+private struct PhaseLabelsKey: EnvironmentKey {
+    static let defaultValue: PhaseLabels = .default
+}
+
+extension EnvironmentValues {
+    var phaseLabels: PhaseLabels {
+        get { self[PhaseLabelsKey.self] }
+        set { self[PhaseLabelsKey.self] = newValue }
     }
 }
 

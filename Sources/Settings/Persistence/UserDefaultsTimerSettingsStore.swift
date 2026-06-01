@@ -1,7 +1,7 @@
 import Foundation
 import GrainDomain
 
-actor UserDefaultsSettingsStore: SettingsStore {
+actor UserDefaultsTimerSettingsStore: TimerSettingsStore {
     private let defaults: UserDefaults
     private let key = "com.github.vitalydolgov.grain.settings"
 

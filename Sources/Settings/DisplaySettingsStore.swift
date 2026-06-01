@@ -1,4 +1,4 @@
 protocol DisplaySettingsStore: Sendable {
-    func load() async throws -> MenuBarLabelFormat?
-    func save(_ format: MenuBarLabelFormat) async throws
+    func load() async throws -> DisplayPreferences?
+    func save(_ preferences: DisplayPreferences) async throws
 }

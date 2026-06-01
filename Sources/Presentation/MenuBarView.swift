@@ -16,7 +16,14 @@ struct MenuBarView: View {
     }
 
     private var phaseImageName: String {
-        timerRuntime.currentLocation?.kind == .phaseB ? "b.circle" : "a.circle"
+        switch timerRuntime.state {
+        case .running:
+            timerRuntime.currentLocation?.kind == .phaseB ? "b.circle" : "a.circle"
+        case .idle, .paused:
+            "pause.circle"
+        case .completed:
+            "checkmark.circle"
+        }
     }
 
     private func format(_ duration: Duration) -> String {

@@ -4,24 +4,32 @@ A macOS menubar interval timer app. Tracks focus and break sessions with a confi
 
 ## Architecture
 
-The app follows Domain-Driven Design with three layers. Dependencies point inward: **Presentation** depends on **Application**, Application depends on **Domain**. Domain has no outward dependencies.
+The app follows Domain-Driven Design with four components. Dependencies point inward.
 
 ```mermaid
 flowchart TD
     P[Presentation\n<i>SwiftUI</i>]
-    B[Runtime Proxy\n<i>@MainActor</i>]
-    U[Persistence\n<i>UserDefaults</i>]
 
     subgraph ROW[" "]
-        A[Application\n<i>Commands + Runtime</i>]
+        A[Application\n<i>Runtime</i>]
         D[Domain]
+        A --> D
     end
 
-    P --> B --> A --> D
-    U --> A
+    S[Settings]
+    U[Settings Persistence\n<i>UserDefaults</i>]
+
+    P --> A
+    P --> S
+    S --> D
+    U --> S
 ```
 
-The Grain library (at `Core/`) owns the Application and Domain layers. This repository is the Presentation layer only — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to  `@Observable` system on the main actor.
+The Grain library (at `Core/`) owns the Application and Domain layers. This repository provides the remaining three:
+
+- **Presentation** — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to the `@Observable` system on the main actor
+- **Settings** — store protocols and facades for timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`); depends on Domain for shared value types
+  - **Settings Persistence** — `UserDefaults`-backed implementations of the Settings store protocols
 
 ## Building
 

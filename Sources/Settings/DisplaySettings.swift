@@ -5,15 +5,15 @@ struct DisplaySettings: Sendable {
         self.store = store
     }
 
-    func load() async -> MenuBarLabelFormat {
+    func load() async -> DisplayPreferences {
         do {
-            return try await store.load() ?? .time
+            return try await store.load() ?? .default
         } catch {
-            return .time
+            return .default
         }
     }
 
-    func save(_ format: MenuBarLabelFormat) async throws {
-        try await store.save(format)
+    func save(_ preferences: DisplayPreferences) async throws {
+        try await store.save(preferences)
     }
 }

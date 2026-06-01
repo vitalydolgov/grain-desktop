@@ -4,14 +4,15 @@ A macOS menubar interval timer app built on top of the [Grain](https://github.co
 
 ## Architecture
 
-The app follows Domain-Driven Design across four layers, dependencies pointing inward:
+The app follows Domain-Driven Design with four components. Dependencies point inward:
 
 - **Presentation** — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
-- **Persistence** — settings storage backed by UserDefaults
+- **Settings** — store protocols and facades for timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`); depends on Domain for shared value types
+  - **Settings Persistence** — `UserDefaults`-backed implementations of the Settings store protocols
 - **Application** — commands and runtime from the Grain library (`GrainApplication`)
 - **Domain** — aggregates and events from the Grain library (`GrainDomain`)
 
-Presentation and Persistence are independent — both depend on Application, but not on each other. Application depends on Domain for the core model. Domain has no dependencies.
+Presentation depends on both Application (via `RuntimeProxy`) and Settings. Settings depends on Domain. Application depends on Domain. Domain has no dependencies.
 
 ## Conventions
 
@@ -45,12 +46,14 @@ xcodebuild build -project GrainDesktop.xcodeproj -scheme GrainDesktop \
 
 ## Repository
 
-Use short, high-level commit messages with no body. One imperative phrase describing what changed, no colon-separated detail lists.
+Commit messages are a single short line — no description body.
 
-If `Core/` changes, commit the updated submodule pointer with message "Bump core":
+When this file is the sole change in a commit, use `Update CLAUDE.md`. Otherwise include it silently — don't mention it in the commit message.
+
+Edit files in `Core/` directly, commit inside `Core/`, then commit the updated submodule pointer in the parent repo as a separate commit:
 
 ```sh
-git add Core
-git commit -m "Bump core"
+git add Core && git commit -m "Bump core"
 ```
 
+When a change spans both `Core/` and the mobile layer, always commit and bump `Core/` first. The mobile commit's submodule pointer must reference a committed Core state — committing mobile changes before the Core commit leaves the pointer pointing at an older revision, breaking the build for that commit.
