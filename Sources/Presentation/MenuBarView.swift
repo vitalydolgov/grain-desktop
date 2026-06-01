@@ -10,7 +10,7 @@ struct MenuBarView: View {
     }
 
     private func format(_ duration: Duration) -> String {
-        let total = duration.millis / 1000
+        let total = duration.seconds
         return String(format: "%02d:%02d", total / 60, total % 60)
     }
 }

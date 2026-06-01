@@ -45,7 +45,7 @@ xcodebuild build -project GrainDesktop.xcodeproj -scheme GrainDesktop \
 
 ## Repository
 
-Use short, descriptive commit messages with no body, e.g. `Add timer reset button`.
+Use short, high-level commit messages with no body. One imperative phrase describing what changed, no colon-separated detail lists.
 
 If `Core/` changes, commit the updated submodule pointer with message "Bump core":
 
