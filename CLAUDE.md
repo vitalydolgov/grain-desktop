@@ -24,12 +24,13 @@ flowchart TD
     S("Settings<br/><i>UserDefaults</i>")
 
     P --> RP
-    RP --> A
+    RP -->|commands| A
+    A -.->|snapshots, signals| RP
     P --> S
     S --> D
 ```
 
-> The boxed pair (Application + Domain) is the *Grain* library — **Application** drives state transitions via commands; **Domain** holds the timer aggregates and invariants. **Presentation** renders the menubar UI. **Runtime Proxy** (subroutine shape) bridges the actor-based runtime to SwiftUI's `@Observable` system on the main actor. **Settings** (rounded rectangle) stores timer configuration and display preferences in `UserDefaults`; it depends on Domain for shared value types.
+> The boxed pair (Application + Domain) is the *Grain* library — **Application** drives state transitions via commands and streams state back out; **Domain** holds the timer aggregates and invariants. **Presentation** renders the menubar UI. **Runtime Proxy** (subroutine shape) bridges the actor-based runtime to SwiftUI's `@Observable` system on the main actor. **Settings** (rounded rectangle) stores timer configuration and display preferences in `UserDefaults`; it depends on Domain for shared value types.
 
 ### Composition
 
@@ -38,7 +39,7 @@ flowchart TD
 - **Domain** (`GrainDomain` module) — timer aggregates, events, and invariants
 - **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`) behind store protocols
 
-### What goes where — quick test
+#### What goes where — quick test
 
 Before placing code, ask: *would this still make sense if the app were a CLI, a server endpoint, and a desktop application simultaneously?*
 
@@ -46,6 +47,13 @@ Before placing code, ask: *would this still make sense if the app were a CLI, a 
 - "Yes, but something has to drive it" → Application
 - "No — only in this UI" → Presentation
 - "No — it's a user-configurable preference" → Settings
+
+### Streaming
+
+The Application layer emits two streams that flow back up to `RuntimeProxy`:
+
+- **`snapshots`** — yields a fresh snapshot after every state change; `RuntimeProxy` consumes this to keep its observable properties in sync with the actor
+- **`signals`** — surfaces discrete lifecycle events as the public output of the Application layer; `RuntimeProxy` forwards it as-is so Presentation subscribers can react without polling
 
 ## Development
 

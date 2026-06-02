@@ -14,8 +14,8 @@ final class NotificationService {
         send(title: "\(phaseName) completed")
     }
 
-    func notifySessionCompleted() {
-        send(title: "Session completed")
+    func notifySessionCompleted(whileAway: Bool = false) {
+        send(title: "Session completed", body: whileAway ? "Timer ran out while away" : nil)
     }
 
     func notifyStateRecovered() {

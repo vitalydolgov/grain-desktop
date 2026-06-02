@@ -27,21 +27,31 @@ struct GrainApp: App {
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(plan: saved.plan, location: saved.location,
-                                             phaseStartedAt: saved.phaseStartedAt)
-                        if saved.wasRunning { notifications.notifyStateRecovered() }
+                                             phaseStartedAt: saved.phaseStartedAt,
+                                             wasRunning: saved.wasRunning)
                     }
                 }
-                .onChange(of: timerRuntime.state) { _, new in
-                    saveRuntimeState()
-                    if new == .completed { notifications.notifySessionCompleted() }
-                }
-                .onChange(of: timerRuntime.currentLocation) { old, new in
-                    saveRuntimeState()
-                    if let old, new != nil {
-                        let labels = settings.preferences.phaseLabels
-                        let name = old.kind == .phaseA ? labels.nameA : labels.nameB
-                        notifications.notifyPhaseCompleted(phaseName: name)
+                .task {
+                    for await signal in timerRuntime.signals {
+                        switch signal {
+                        case .phaseCompleted(let location):
+                            let labels = settings.preferences.phaseLabels
+                            let name = location.kind == .phaseA ? labels.nameA : labels.nameB
+                            notifications.notifyPhaseCompleted(phaseName: name)
+                        case .sessionCompleted:
+                            notifications.notifySessionCompleted()
+                        case .sessionCompletedWhileAway:
+                            notifications.notifySessionCompleted(whileAway: true)
+                        case .sessionRestored:
+                            notifications.notifyStateRecovered()
+                        }
                     }
+                }
+                .onChange(of: timerRuntime.state) { _, _ in
+                    saveRuntimeState()
+                }
+                .onChange(of: timerRuntime.currentLocation) { _, _ in
+                    saveRuntimeState()
                 }
         }
         .menuBarExtraStyle(.window)

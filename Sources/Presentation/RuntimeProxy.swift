@@ -36,8 +36,10 @@ final class RuntimeProxy {
         remainingTime = snapshot.remainingTime
     }
 
-    func restore(plan: SessionPlan, location: PhaseLocation, phaseStartedAt: Date) {
-        Task { await runtime.restore(plan: plan, location: location, phaseStartedAt: phaseStartedAt) }
+    var signals: AsyncStream<TimerSignal> { runtime.signals }
+
+    func restore(plan: SessionPlan, location: PhaseLocation, phaseStartedAt: Date, wasRunning: Bool) {
+        Task { await runtime.restore(plan: plan, location: location, phaseStartedAt: phaseStartedAt, wasRunning: wasRunning) }
     }
 
     func start() {
