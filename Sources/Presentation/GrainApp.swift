@@ -9,6 +9,7 @@ struct GrainApp: App {
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
+    @State private var notifications = NotificationService()
 
     var body: some Scene {
         MenuBarExtra {
@@ -22,13 +23,26 @@ struct GrainApp: App {
                 .task {
                     timerRuntime.plan = await settings.timer.load()
                     settings.preferences = await settings.display.load()
+                    notifications.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
+                        await settings.runtimeState.clear()
                         timerRuntime.restore(plan: saved.plan, location: saved.location,
                                              phaseStartedAt: saved.phaseStartedAt)
+                        if saved.wasRunning { notifications.notifyStateRecovered() }
                     }
                 }
-                .onChange(of: timerRuntime.state) { _, _ in saveRuntimeState() }
-                .onChange(of: timerRuntime.currentLocation) { _, _ in saveRuntimeState() }
+                .onChange(of: timerRuntime.state) { _, new in
+                    saveRuntimeState()
+                    if new == .completed { notifications.notifySessionCompleted() }
+                }
+                .onChange(of: timerRuntime.currentLocation) { old, new in
+                    saveRuntimeState()
+                    if let old, new != nil {
+                        let labels = settings.preferences.phaseLabels
+                        let name = old.kind == .phaseA ? labels.nameA : labels.nameB
+                        notifications.notifyPhaseCompleted(phaseName: name)
+                    }
+                }
         }
         .menuBarExtraStyle(.window)
 
@@ -53,7 +67,8 @@ struct GrainApp: App {
                 let runtimeState = RuntimeState(
                     plan: plan,
                     location: location,
-                    phaseStartedAt: phaseStartedAt
+                    phaseStartedAt: phaseStartedAt,
+                    wasRunning: state == .running
                 )
                 try? await settings.runtimeState.save(runtimeState)
             case .idle, .completed:

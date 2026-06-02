@@ -5,4 +5,5 @@ struct RuntimeState: Codable, Sendable {
     var plan: SessionPlan
     var location: PhaseLocation
     var phaseStartedAt: Date
+    var wasRunning: Bool
 }

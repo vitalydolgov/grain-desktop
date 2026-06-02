@@ -26,6 +26,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.GrainDesktop
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_NSUserNotificationsUsageDescription: "Grain notifies you when a timer phase or session completes."
         SWIFT_VERSION: "6"
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
