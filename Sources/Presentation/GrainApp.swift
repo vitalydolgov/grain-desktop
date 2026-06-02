@@ -9,7 +9,6 @@ struct GrainApp: App {
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
-    @State private var notifications = NotificationService()
 
     var body: some Scene {
         MenuBarExtra {
@@ -23,7 +22,7 @@ struct GrainApp: App {
                 .task {
                     timerRuntime.plan = await settings.timer.load()
                     settings.preferences = await settings.display.load()
-                    notifications.requestAuthorization()
+                    NotificationService.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(plan: saved.plan, location: saved.location,
@@ -37,13 +36,13 @@ struct GrainApp: App {
                         case .phaseCompleted(let location):
                             let labels = settings.preferences.phaseLabels
                             let name = location.kind == .phaseA ? labels.nameA : labels.nameB
-                            notifications.notifyPhaseCompleted(phaseName: name)
+                            NotificationService.notifyPhaseCompleted(phaseName: name)
                         case .sessionCompleted:
-                            notifications.notifySessionCompleted()
+                            NotificationService.notifySessionCompleted()
                         case .sessionCompletedWhileAway:
-                            notifications.notifySessionCompleted(whileAway: true)
+                            NotificationService.notifySessionCompleted(whileAway: true)
                         case .sessionRestored:
-                            notifications.notifyStateRecovered()
+                            NotificationService.notifyStateRecovered()
                         }
                     }
                 }

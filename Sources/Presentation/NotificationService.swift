@@ -1,28 +1,26 @@
 import UserNotifications
 
-@MainActor
-final class NotificationService {
-
-    func requestAuthorization() {
+enum NotificationService {
+    static func requestAuthorization() {
         Task {
             try? await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .sound])
         }
     }
 
-    func notifyPhaseCompleted(phaseName: String) {
+    static func notifyPhaseCompleted(phaseName: String) {
         send(title: "\(phaseName) completed")
     }
 
-    func notifySessionCompleted(whileAway: Bool = false) {
+    static func notifySessionCompleted(whileAway: Bool = false) {
         send(title: "Session completed", body: whileAway ? "Timer ran out while away" : nil)
     }
 
-    func notifyStateRecovered() {
+    static func notifyStateRecovered() {
         send(title: "Session restored", body: "Timer has been fast-forwarded")
     }
 
-    private func send(title: String, body: String? = nil) {
+    private static func send(title: String, body: String? = nil) {
         let content = UNMutableNotificationContent()
         content.title = title
         if let body { content.body = body }
