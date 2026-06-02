@@ -4,10 +4,10 @@ import GrainApplication
 
 struct MenuBarView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(\.menuBarLabelFormat) private var labelFormat
+    @Environment(GrainAppSettings.self) private var settings
 
     var body: some View {
-        switch labelFormat {
+        switch settings.preferences.menuBarLabelFormat {
         case .time:
             Text(format(timerRuntime.remainingTime))
         case .icon:
@@ -32,13 +32,3 @@ struct MenuBarView: View {
     }
 }
 
-private struct MenuBarLabelFormatKey: EnvironmentKey {
-    static let defaultValue: MenuBarLabelFormat = .time
-}
-
-extension EnvironmentValues {
-    var menuBarLabelFormat: MenuBarLabelFormat {
-        get { self[MenuBarLabelFormatKey.self] }
-        set { self[MenuBarLabelFormatKey.self] = newValue }
-    }
-}

@@ -2,9 +2,8 @@ import SwiftUI
 import GrainDomain
 
 struct SettingsView: View {
-    let settings: GrainAppSettings
-    let onSave: (SessionPlan) -> Void
-    let onDisplaySave: (DisplayPreferences) -> Void
+    @Environment(GrainAppSettings.self) private var settings
+    @Environment(RuntimeProxy.self) private var timerRuntime
     @State private var totalRounds = SessionPlan.default.totalRounds
     @State private var nameA = PhaseLabels.default.nameA
     @State private var minutesA = 25
@@ -18,8 +17,6 @@ struct SettingsView: View {
         TabView {
             TimerTab(
                 plan: makePlan(),
-                settings: settings.timer,
-                onSave: onSave,
                 totalRounds: $totalRounds,
                 nameA: $nameA,
                 nameB: $nameB,
@@ -72,7 +69,7 @@ struct SettingsView: View {
         let plan = makePlan()
         Task {
             try? await settings.timer.save(plan)
-            onSave(plan)
+            timerRuntime.plan = plan
         }
     }
 
@@ -81,15 +78,13 @@ struct SettingsView: View {
         let prefs = makePreferences()
         Task {
             try? await settings.display.save(prefs)
-            onDisplaySave(prefs)
+            settings.preferences = prefs
         }
     }
 }
 
 private struct TimerTab: View {
     let plan: SessionPlan
-    let settings: TimerSettings
-    let onSave: (SessionPlan) -> Void
     @Binding var totalRounds: Int
     @Binding var nameA: String
     @Binding var nameB: String
@@ -140,7 +135,7 @@ private struct TimerTab: View {
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        StartButton(plan: plan, onSave: onSave)
+                        StartButton(plan: plan)
                     }
                 }
             }
@@ -183,13 +178,12 @@ private struct AppearanceTab: View {
 
 private struct StartButton: View {
     let plan: SessionPlan
-    let onSave: (SessionPlan) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         Button {
-            onSave(plan)
+            timerRuntime.plan = plan
             timerRuntime.start()
             dismiss()
         } label: {

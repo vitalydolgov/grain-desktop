@@ -1,4 +1,5 @@
 import GrainDomain
+import Observation
 
 // MARK: Stores
 
@@ -56,7 +57,15 @@ struct DisplaySettings: Sendable {
 
 // MARK: Composition
 
-struct GrainAppSettings: Sendable {
+@MainActor
+@Observable
+final class GrainAppSettings {
     let timer: TimerSettings
     let display: DisplaySettings
+    var preferences: DisplayPreferences = .default
+
+    init(timer: TimerSettings, display: DisplaySettings) {
+        self.timer = timer
+        self.display = display
+    }
 }

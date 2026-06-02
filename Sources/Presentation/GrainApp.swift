@@ -8,34 +8,27 @@ struct GrainApp: App {
         display: DisplaySettings(store: UserDefaultsDisplaySettingsStore())
     )
     @State private var timerRuntime = RuntimeProxy()
-    @State private var menuBarFormat: MenuBarLabelFormat = .time
-    @State private var phaseLabels: PhaseLabels = .default
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarExtraView()
                 .environment(timerRuntime)
-                .environment(\.phaseLabels, phaseLabels)
+                .environment(settings)
         } label: {
             MenuBarView()
                 .environment(timerRuntime)
-                .environment(\.menuBarLabelFormat, menuBarFormat)
+                .environment(settings)
                 .task {
                     timerRuntime.plan = await settings.timer.load()
-                    let prefs = await settings.display.load()
-                    menuBarFormat = prefs.menuBarLabelFormat
-                    phaseLabels = prefs.phaseLabels
+                    settings.preferences = await settings.display.load()
                 }
         }
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView(
-                settings: settings,
-                onSave: { timerRuntime.plan = $0 },
-                onDisplaySave: { menuBarFormat = $0.menuBarLabelFormat; phaseLabels = $0.phaseLabels }
-            )
-            .environment(timerRuntime)
+            SettingsView()
+                .environment(timerRuntime)
+                .environment(settings)
         }
     }
 }
