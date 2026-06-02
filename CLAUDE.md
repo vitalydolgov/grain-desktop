@@ -1,8 +1,13 @@
 # Grain (desktop)
 
-A macOS menubar interval timer app. Alternates between two configurable phases (A and B) on a repeating cycle.
+A macOS menubar interval timer app. Alternates between two phases (A and B) on a repeating cycle.
 
 **Stack:** Swift 6 · SwiftUI
+
+### Features
+
+- **Session persistence** — quitting the app or restarting the machine doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
+- **System notifications** on phase and session completion
 
 ## Architecture
 
@@ -37,7 +42,7 @@ flowchart TD
 - **Presentation** (`Sources/Presentation`) — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
 - **Application** (`GrainApplication` module) — commands and runtime; drives state transitions from outside the domain
 - **Domain** (`GrainDomain` module) — timer aggregates, events, and invariants
-- **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`) behind store protocols
+- **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`), display preferences (`DisplaySettings`), and session restore state (`RuntimeStateSettings`) behind store protocols
 
 #### What goes where — quick test
 
@@ -55,23 +60,16 @@ The Application layer emits two streams that flow back up to `RuntimeProxy`:
 - **`snapshots`** — yields a fresh snapshot after every state change; `RuntimeProxy` consumes this to keep its observable properties in sync with the actor
 - **`signals`** — surfaces discrete lifecycle events as the public output of the Application layer; `RuntimeProxy` forwards it as-is so Presentation subscribers can react without polling
 
-## Development
+## Getting Started
 
-After cloning, initialise the submodule and regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
+After cloning, initialize the submodule and regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 
 ```sh
 git submodule update --init
 xcodegen generate
 ```
 
-Then open `GrainDesktop.xcodeproj` in Xcode to build and run. Re-run `xcodegen generate` after any source tree change.
-
-Build without opening Xcode:
-
-```sh
-xcodebuild build -project GrainDesktop.xcodeproj -scheme GrainDesktop \
-  -destination 'platform=macOS'
-```
+Re-run `xcodegen generate` after any source tree change.
 
 ## Documentation
 

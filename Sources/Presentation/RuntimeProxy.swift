@@ -8,13 +8,12 @@ import GrainApplication
 final class RuntimeProxy {
     var plan: SessionPlan = .default {
         didSet {
-            let newPlan = plan
-            Task { await runtime.setPlan(newPlan) }
+            Task { await runtime.setPlan(plan) }
         }
     }
     private(set) var state: SessionState = .idle
     private(set) var currentLocation: PhaseLocation?
-    private(set) var elapsedInPhase: Duration = .zero
+    private(set) var phaseStartedAt: Date? = nil
     private(set) var remainingTime: Duration = SessionPlan.default.durationA
 
     private let runtime: TimerRuntime
@@ -24,22 +23,21 @@ final class RuntimeProxy {
         self.runtime = runtime
         Task { [weak self, snapshots = runtime.snapshots] in
             for await snapshot in snapshots {
-                self?.apply(snapshot)
+                self?.state = snapshot.state
+                self?.currentLocation = snapshot.currentLocation
+                self?.phaseStartedAt = snapshot.phaseStartedAt
+                self?.remainingTime = snapshot.remainingTime
             }
         }
     }
 
-    private func apply(_ snapshot: TimerSnapshot) {
-        state = snapshot.state
-        currentLocation = snapshot.currentLocation
-        elapsedInPhase = snapshot.elapsedInPhase
-        remainingTime = snapshot.remainingTime
-    }
-
     var signals: AsyncStream<TimerSignal> { runtime.signals }
 
-    func restore(plan: SessionPlan, location: PhaseLocation, phaseStartedAt: Date, wasRunning: Bool) {
-        Task { await runtime.restore(plan: plan, location: location, phaseStartedAt: phaseStartedAt, wasRunning: wasRunning) }
+    func restore(from state: RuntimeState) {
+        let elapsed = state.wasRunning
+            ? Duration(millis: UInt64(max(0, Date().timeIntervalSince(state.phaseStartedAt))) * 1000)
+            : state.elapsedInPhase
+        Task { await runtime.restore(plan: state.plan, location: state.location, elapsed: elapsed, wasRunning: state.wasRunning) }
     }
 
     func start() {

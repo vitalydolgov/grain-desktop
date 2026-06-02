@@ -25,9 +25,7 @@ struct GrainApp: App {
                     NotificationService.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
-                        timerRuntime.restore(plan: saved.plan, location: saved.location,
-                                             phaseStartedAt: saved.phaseStartedAt,
-                                             wasRunning: saved.wasRunning)
+                        timerRuntime.restore(from: saved)
                     }
                 }
                 .task {
@@ -66,17 +64,18 @@ struct GrainApp: App {
     private func saveRuntimeState() {
         let state = timerRuntime.state
         let location = timerRuntime.currentLocation
-        let elapsed = timerRuntime.elapsedInPhase
+        let phaseStartedAt = timerRuntime.phaseStartedAt
         let plan = timerRuntime.plan
         Task {
             switch state {
             case .running, .paused:
-                guard let location else { return }
-                let phaseStartedAt = Date().addingTimeInterval(-TimeInterval(elapsed.seconds))
+                guard let location, let phaseStartedAt else { return }
+                let elapsed = Duration(millis: UInt64(max(0, Date().timeIntervalSince(phaseStartedAt))) * 1000)
                 let runtimeState = RuntimeState(
                     plan: plan,
                     location: location,
                     phaseStartedAt: phaseStartedAt,
+                    elapsedInPhase: elapsed,
                     wasRunning: state == .running
                 )
                 try? await settings.runtimeState.save(runtimeState)
