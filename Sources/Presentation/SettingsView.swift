@@ -2,8 +2,7 @@ import SwiftUI
 import GrainDomain
 
 struct SettingsView: View {
-    let settings: TimerSettings
-    let displaySettings: DisplaySettings
+    let settings: GrainAppSettings
     let onSave: (SessionPlan) -> Void
     let onDisplaySave: (DisplayPreferences) -> Void
     @State private var totalRounds = SessionPlan.default.totalRounds
@@ -19,7 +18,7 @@ struct SettingsView: View {
         TabView {
             TimerTab(
                 plan: makePlan(),
-                settings: settings,
+                settings: settings.timer,
                 onSave: onSave,
                 totalRounds: $totalRounds,
                 nameA: $nameA,
@@ -35,11 +34,11 @@ struct SettingsView: View {
         }
         .frame(width: 300, height: 300)
         .task {
-            let plan = await settings.load()
+            let plan = await settings.timer.load()
             minutesA = Int(plan.durationA.seconds / 60)
             minutesB = Int(plan.durationB.seconds / 60)
             totalRounds = plan.totalRounds
-            let prefs = await displaySettings.load()
+            let prefs = await settings.display.load()
             menuBarFormat = prefs.menuBarLabelFormat
             nameA = prefs.phaseLabels.nameA
             nameB = prefs.phaseLabels.nameB
@@ -72,7 +71,7 @@ struct SettingsView: View {
         guard isLoaded else { return }
         let plan = makePlan()
         Task {
-            try? await settings.save(plan)
+            try? await settings.timer.save(plan)
             onSave(plan)
         }
     }
@@ -81,7 +80,7 @@ struct SettingsView: View {
         guard isLoaded else { return }
         let prefs = makePreferences()
         Task {
-            try? await displaySettings.save(prefs)
+            try? await settings.display.save(prefs)
             onDisplaySave(prefs)
         }
     }

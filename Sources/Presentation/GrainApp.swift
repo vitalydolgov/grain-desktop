@@ -3,8 +3,10 @@ import GrainDomain
 
 @main
 struct GrainApp: App {
-    @State private var settings = TimerSettings(store: UserDefaultsTimerSettingsStore())
-    @State private var displaySettings = DisplaySettings(store: UserDefaultsDisplaySettingsStore())
+    @State private var settings = GrainAppSettings(
+        timer: TimerSettings(store: UserDefaultsTimerSettingsStore()),
+        display: DisplaySettings(store: UserDefaultsDisplaySettingsStore())
+    )
     @State private var timerRuntime = RuntimeProxy()
     @State private var menuBarFormat: MenuBarLabelFormat = .time
     @State private var phaseLabels: PhaseLabels = .default
@@ -19,8 +21,8 @@ struct GrainApp: App {
                 .environment(timerRuntime)
                 .environment(\.menuBarLabelFormat, menuBarFormat)
                 .task {
-                    timerRuntime.plan = await settings.load()
-                    let prefs = await displaySettings.load()
+                    timerRuntime.plan = await settings.timer.load()
+                    let prefs = await settings.display.load()
                     menuBarFormat = prefs.menuBarLabelFormat
                     phaseLabels = prefs.phaseLabels
                 }
@@ -30,7 +32,6 @@ struct GrainApp: App {
         Settings {
             SettingsView(
                 settings: settings,
-                displaySettings: displaySettings,
                 onSave: { timerRuntime.plan = $0 },
                 onDisplaySave: { menuBarFormat = $0.menuBarLabelFormat; phaseLabels = $0.phaseLabels }
             )
