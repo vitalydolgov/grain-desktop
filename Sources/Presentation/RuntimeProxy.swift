@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 import GrainDomain
 import GrainApplication
@@ -33,6 +34,10 @@ final class RuntimeProxy {
         currentLocation = snapshot.currentLocation
         elapsedInPhase = snapshot.elapsedInPhase
         remainingTime = snapshot.remainingTime
+    }
+
+    func restore(plan: SessionPlan, location: PhaseLocation, phaseStartedAt: Date) {
+        Task { await runtime.restore(plan: plan, location: location, phaseStartedAt: phaseStartedAt) }
     }
 
     func start() {
