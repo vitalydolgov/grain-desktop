@@ -1,59 +1,70 @@
 # Grain (desktop)
 
-A macOS menubar interval timer app built on top of the [Grain](https://github.com/vitalydolgov/grain) library, which provides the domain model, application logic and runtime.
+A macOS menubar interval timer app. Alternates between two configurable phases (A and B) on a repeating cycle.
+
+**Stack:** Swift 6 · SwiftUI
 
 ## Architecture
 
-The app follows Domain-Driven Design with four components. Dependencies point inward:
+The app follows Domain-Driven Design with three layers, plus a **Settings** bounded context. Dependencies point inward.
 
-- **Presentation** — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
-- **Settings** — store protocols and facades for timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`); depends on Domain for shared value types
-  - Persistence — `UserDefaults`-backed implementations of the Settings store protocols
-- **Application** — commands and runtime from the Grain library (`GrainApplication`)
-- **Domain** — aggregates and events from the Grain library (`GrainDomain`)
+The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a git submodule at `Core/`. **Presentation** and **Settings** live in this repository.
 
-Presentation depends on both Application (via `RuntimeProxy`) and Settings. Settings depends on Domain. Application depends on Domain. Domain has no dependencies.
+```mermaid
+flowchart TD
+    P["Presentation<br/><i>SwiftUI</i>"]
+    RP[["Runtime Proxy<br/><i>@MainActor</i>"]]
 
-## Conventions
+    subgraph Grain
+        A["Application<br/><i>Commands + Runtime</i>"]
+        D["Domain"]
+        A --> D
+    end
 
-### SwiftUI
+    S("Settings<br/><i>UserDefaults</i>")
 
-- Extract non-trivial sub-views into their own private structs rather than leaving them as computed `@ViewBuilder` properties on the parent view.
-- Group view properties by stability, most stable first, so a reader sees the view's fixed contract before its volatile state: `let` constants → `@Binding` (caller-owned) → `@Environment`/`@Query` (injected, external) → `@State`/`@Bindable` (view-owned, mutable).
-- Order within a view struct: properties → `init` → `body` → private helpers (computed vars and methods).
-- Business logic lives as private methods on the view; extract a view model only when the logic is substantial enough to warrant a separate type.
+    P --> RP
+    RP --> A
+    P --> S
+    S --> D
+```
+
+> The boxed pair (Application + Domain) is the *Grain* library — **Application** drives state transitions via commands; **Domain** holds the timer aggregates and invariants. **Presentation** renders the menubar UI. **Runtime Proxy** (subroutine shape) bridges the actor-based runtime to SwiftUI's `@Observable` system on the main actor. **Settings** (rounded rectangle) stores timer configuration and display preferences in `UserDefaults`; it depends on Domain for shared value types.
+
+### Composition
+
+- **Presentation** (`Sources/Presentation`) — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
+- **Application** (`GrainApplication` module) — commands and runtime; drives state transitions from outside the domain
+- **Domain** (`GrainDomain` module) — timer aggregates, events, and invariants
+- **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`) and display preferences (`DisplaySettings`) behind store protocols
+
+### What goes where — quick test
+
+Before placing code, ask: *would this still make sense if the app were a CLI, a server endpoint, and a desktop application simultaneously?*
+
+- "Yes, as a rule or invariant" → Domain
+- "Yes, but something has to drive it" → Application
+- "No — only in this UI" → Presentation
+- "No — it's a user-configurable preference" → Settings
 
 ## Development
 
-Run once after cloning:
+After cloning, initialise the submodule and regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 
 ```sh
 git submodule update --init
-```
-
-Run `xcodegen generate` whenever files are added or removed:
-
-```sh
 xcodegen generate
 ```
 
-Always run the build after every code change and fix all errors before reporting the task as done:
+Then open `GrainDesktop.xcodeproj` in Xcode to build and run. Re-run `xcodegen generate` after any source tree change.
+
+Build without opening Xcode:
 
 ```sh
 xcodebuild build -project GrainDesktop.xcodeproj -scheme GrainDesktop \
   -destination 'platform=macOS'
 ```
 
-## Repository
+## Documentation
 
-Commit messages are a single short line — no description body.
-
-When this file is the sole change in a commit, use `Update CLAUDE.md`. Otherwise include it silently — don't mention it in the commit message.
-
-Edit files in `Core/` directly, commit inside `Core/`, then commit the updated submodule pointer in the parent repo as a separate commit:
-
-```sh
-git add Core && git commit -m "Bump core"
-```
-
-When a change spans both `Core/` and the mobile layer, always commit and bump `Core/` first. The mobile commit's submodule pointer must reference a committed Core state — committing mobile changes before the Core commit leaves the pointer pointing at an older revision, breaking the build for that commit.
+- [`conventions.md`](Documentation/conventions.md) — coding conventions; consult before writing or reviewing any code
