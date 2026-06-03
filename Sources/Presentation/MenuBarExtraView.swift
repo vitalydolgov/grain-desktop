@@ -10,10 +10,10 @@ struct MenuBarExtraView: View {
         VStack(alignment: .leading, spacing: 0) {
             TimerHeader(
                 displayTime: format(timerRuntime.remainingTime),
-                currentRound: timerRuntime.currentLocation?.round ?? 1,
+                currentCycle: timerRuntime.currentLocation?.cycle ?? 1,
                 phaseKind: timerRuntime.currentLocation?.kind ?? .phaseA,
-                partAName: settings.preferences.phaseLabels.nameA,
-                partBName: settings.preferences.phaseLabels.nameB
+                phaseAName: settings.preferences.phaseLabels.phaseA,
+                phaseBName: settings.preferences.phaseLabels.phaseB
             )
             Divider()
             TimerActions(runState: timerRuntime.state)
@@ -33,24 +33,24 @@ struct MenuBarExtraView: View {
 
 private struct TimerHeader: View {
     let displayTime: String
-    let currentRound: Int
+    let currentCycle: Int
     let phaseKind: PhaseKind?
-    let partAName: String
-    let partBName: String
+    let phaseAName: String
+    let phaseBName: String
 
     var body: some View {
         HStack {
             Text(displayTime)
                 .font(.system(.title, design: .monospaced))
                 .monospacedDigit()
-            Text("R\(currentRound)")
-                .font(.caption)
+            Text("#\(currentCycle)")
+                .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
             Spacer()
             if let kind = phaseKind {
                 HStack(spacing: 4) {
                     Image(systemName: kind == .phaseA ? "a.circle" : "b.circle")
-                    Text(kind == .phaseA ? partAName : partBName)
+                    Text(kind == .phaseA ? phaseAName : phaseBName)
                 }
                 .font(.callout)
                 .foregroundStyle(.secondary)

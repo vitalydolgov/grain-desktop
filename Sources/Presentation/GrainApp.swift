@@ -33,7 +33,7 @@ struct GrainApp: App {
                         switch signal {
                         case .phaseCompleted(let location):
                             let labels = settings.preferences.phaseLabels
-                            let name = location.kind == .phaseA ? labels.nameA : labels.nameB
+                            let name = location.kind == .phaseA ? labels.phaseA : labels.phaseB
                             NotificationService.notifyPhaseCompleted(phaseName: name)
                         case .sessionCompleted:
                             NotificationService.notifySessionCompleted()
