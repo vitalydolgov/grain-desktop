@@ -44,15 +44,6 @@ flowchart TD
 - **Domain** (`GrainDomain` module) — timer aggregates, events, and invariants
 - **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`), display preferences (`DisplaySettings`), and session restore state (`RuntimeStateSettings`) behind store protocols
 
-#### What goes where — quick test
-
-Before placing code, ask: *would this still make sense if the app were a CLI, a server endpoint, and a desktop application simultaneously?*
-
-- "Yes, as a rule or invariant" → Domain
-- "Yes, but something has to drive it" → Application
-- "No — only in this UI" → Presentation
-- "No — it's a user-configurable preference" → Settings
-
 ### Streaming
 
 The Application layer emits two streams that flow back up to `RuntimeProxy`:
