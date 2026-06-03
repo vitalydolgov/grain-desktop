@@ -9,7 +9,7 @@ options:
 packages:
   Grain:
     url: https://github.com/vitalydolgov/grain
-    revision: de54f387dcd2628cf7f70c226fc800c40b60dfe4
+    revision: 43317fa25f8bec05889cadde712bc6c84e947e1a
 
 targets:
   GrainDesktop:

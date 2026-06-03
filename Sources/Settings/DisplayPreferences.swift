@@ -3,14 +3,14 @@ enum MenuBarLabelFormat: String, Codable, CaseIterable, Sendable {
     case icon
 }
 
-struct PhaseLabels: Codable, Sendable {
-    var nameA: String
-    var nameB: String
+struct PhaseLabels: Codable, Sendable, Equatable {
+    var phaseA: String
+    var phaseB: String
 
-    static let `default` = PhaseLabels(nameA: "Work", nameB: "Break")
+    static let `default` = PhaseLabels(phaseA: "Work", phaseB: "Break")
 }
 
-struct DisplayPreferences: Codable, Sendable {
+struct DisplayPreferences: Codable, Sendable, Equatable {
     var menuBarLabelFormat: MenuBarLabelFormat
     var phaseLabels: PhaseLabels
 
