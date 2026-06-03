@@ -13,7 +13,7 @@ A macOS menubar interval timer app. Alternates between two phases (A and B) on a
 
 The app follows Domain-Driven Design with three layers, plus a **Settings** bounded context. Dependencies point inward.
 
-The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a git submodule at `Core/`. **Presentation** and **Settings** live in this repository.
+The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a Swift Package Manager dependency. **Presentation** and **Settings** live in this repository.
 
 ```mermaid
 flowchart TD
@@ -62,10 +62,9 @@ The Application layer emits two streams that flow back up to `RuntimeProxy`:
 
 ## Getting Started
 
-After cloning, initialize the submodule and regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
+Regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 
 ```sh
-git submodule update --init
 xcodegen generate
 ```
 

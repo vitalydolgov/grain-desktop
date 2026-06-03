@@ -8,10 +8,11 @@ options:
 
 packages:
   Grain:
-    path: Core
+    url: https://github.com/vitalydolgov/grain
+    revision: de54f387dcd2628cf7f70c226fc800c40b60dfe4
 
 targets:
-  Grain:
+  GrainDesktop:
     type: application
     platform: macOS
     sources:
@@ -23,6 +24,7 @@ targets:
         product: GrainApplication
     settings:
       base:
+        PRODUCT_NAME: Grain
         PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.Grain
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES

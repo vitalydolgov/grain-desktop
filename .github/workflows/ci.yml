@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: ["claude/**"]
+    paths:
+      - "Sources/**"
+      - "project.yml"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  build:
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GrainDesktop.xcodeproj \
+            -scheme GrainDesktop \
+            -destination "generic/platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            -skipMacroValidation \
+            | xcbeautify --quiet
