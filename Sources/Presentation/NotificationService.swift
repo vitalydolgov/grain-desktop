@@ -1,7 +1,11 @@
 import UserNotifications
 
+@MainActor
 enum NotificationService {
+    private static let delegate = ForegroundPresenter()
+
     static func requestAuthorization() {
+        UNUserNotificationCenter.current().delegate = delegate
         Task {
             try? await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .sound])
@@ -31,5 +35,15 @@ enum NotificationService {
             trigger: nil
         )
         UNUserNotificationCenter.current().add(request)
+    }
+}
+
+private final class ForegroundPresenter: NSObject, UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound])
     }
 }
