@@ -2,7 +2,7 @@ import SwiftUI
 import GrainDomain
 
 struct SettingsView: View {
-    @Environment(GrainAppSettings.self) private var settings
+    @Environment(AppSettings.self) private var settings
     @State private var displayPrefs = DisplayPreferences.default
 
     var body: some View {

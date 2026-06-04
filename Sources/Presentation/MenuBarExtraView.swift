@@ -4,7 +4,7 @@ import GrainApplication
 
 struct MenuBarExtraView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(GrainAppSettings.self) private var settings
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

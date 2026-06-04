@@ -3,7 +3,7 @@ import GrainDomain
 
 struct SettingsPlanTab: View {
     @Binding var displayPrefs: DisplayPreferences
-    @Environment(GrainAppSettings.self) private var settings
+    @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
     @State private var planDraft = PlanDraft()
     @State private var selectedPhase = 0

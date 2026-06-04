@@ -4,7 +4,7 @@ import GrainApplication
 
 struct MenuBarView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(GrainAppSettings.self) private var settings
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         switch settings.preferences.menuBarLabelFormat {
