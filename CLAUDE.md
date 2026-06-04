@@ -1,19 +1,20 @@
-# Grain (desktop)
+# Project Grain
 
 A macOS menubar interval timer app. Alternates between two phases (A and B) on a repeating cycle.
 
 **Stack:** Swift 6 · SwiftUI
 
-### Features
+## Features
 
 - **Session persistence** — quitting the app or restarting the machine doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
+- **Configurable cycle length** — constant, growth, or decay mode controls whether phase durations stay equal or scale across cycles
 - **System notifications** on phase and session completion
 
 ## Architecture
 
 The app follows Domain-Driven Design with three layers, plus a **Settings** bounded context. Dependencies point inward.
 
-The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a Swift Package Manager dependency. **Presentation** and **Settings** live in this repository.
+The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a dependency. **Presentation** and **Settings** live in this repository.
 
 ```mermaid
 flowchart TD
@@ -40,9 +41,8 @@ flowchart TD
 ### Composition
 
 - **Presentation** (`Sources/Presentation`) — SwiftUI views and `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
-- **Application** (`GrainApplication` module) — commands and runtime; drives state transitions from outside the domain
-- **Domain** (`GrainDomain` module) — timer aggregates, events, and invariants
-- **Settings** (`Sources/Settings`) — a *bounded context* that owns timer configuration (`TimerSettings`), display preferences (`DisplaySettings`), and session restore state (`RuntimeStateSettings`) behind store protocols
+- **Settings** (`Sources/Settings`) — a *bounded context* that owns configuration, display preferences, and session restore state
+- **Application** and **Domain** — see the [Grain](https://github.com/vitalydolgov/grain) library
 
 ### Streaming
 
@@ -51,9 +51,9 @@ The Application layer emits two streams that flow back up to `RuntimeProxy`:
 - **`snapshots`** — yields a fresh snapshot after every state change; `RuntimeProxy` consumes this to keep its observable properties in sync with the actor
 - **`signals`** — surfaces discrete lifecycle events as the public output of the Application layer; `RuntimeProxy` forwards it as-is so Presentation subscribers can react without polling
 
-## Getting Started
+## Building
 
-Regenerate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
+Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 
 ```sh
 xcodegen generate
@@ -61,6 +61,8 @@ xcodegen generate
 
 Re-run `xcodegen generate` after any source tree change.
 
-## Documentation
+To build:
 
-- [`conventions.md`](Documentation/conventions.md) — coding conventions; consult before writing or reviewing any code
+```sh
+xcodebuild build -project GrainDesktop.xcodeproj -scheme GrainDesktop -destination 'platform=macOS'
+```

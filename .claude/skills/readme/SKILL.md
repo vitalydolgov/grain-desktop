@@ -2,6 +2,7 @@
 name: update-readme
 description: Update README.md
 user-invocable: false
+when_to_use: whenever the user asks to update, edit, or add content to the README
 ---
 
 `README.md` is a symlink to `CLAUDE.md` — apply changes to `CLAUDE.md` instead.
@@ -9,8 +10,7 @@ user-invocable: false
 Keep this section structure:
 
 1. **Introduction** — what this repo is about, in a sentence or two.
-2. **Stack** — a single line.
+2. **Stack** — inline bold label followed by a single line, not a heading.
 3. **Features** — capabilities a reader would not already infer from the introduction.
 4. **Architecture** — the underlying system design: its layers and components.
-5. **Getting Started** — only when setup is non-trivial; omit otherwise.
-6. **Documentation** — an index of links into `Documentation/`.
+5. **Building & Testing** — how to set up the project, build, and run tests.
