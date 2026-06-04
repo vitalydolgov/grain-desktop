@@ -1,15 +1,68 @@
 {
   "images" : [
-    { "idiom" : "mac", "scale" : "1x", "size" : "16x16"   },
-    { "idiom" : "mac", "scale" : "2x", "size" : "16x16"   },
-    { "idiom" : "mac", "scale" : "1x", "size" : "32x32"   },
-    { "idiom" : "mac", "scale" : "2x", "size" : "32x32"   },
-    { "idiom" : "mac", "scale" : "1x", "size" : "128x128" },
-    { "idiom" : "mac", "scale" : "2x", "size" : "128x128" },
-    { "idiom" : "mac", "scale" : "1x", "size" : "256x256" },
-    { "idiom" : "mac", "scale" : "2x", "size" : "256x256" },
-    { "idiom" : "mac", "scale" : "1x", "size" : "512x512" },
-    { "idiom" : "mac", "scale" : "2x", "size" : "512x512", "filename" : "AppIcon.png" }
+    {
+      "filename" : "Icon-macos-16-1.png",
+      "idiom" : "mac",
+      "scale" : "1x",
+      "size" : "16x16"
+    },
+    {
+      "filename" : "Icon-macos-32-3.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "16x16"
+    },
+    {
+      "filename" : "Icon-macos-32-4.png",
+      "idiom" : "mac",
+      "scale" : "1x",
+      "size" : "32x32"
+    },
+    {
+      "filename" : "Icon-macos-64-1.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "32x32"
+    },
+    {
+      "filename" : "Icon-macos-128-2.png",
+      "idiom" : "mac",
+      "scale" : "1x",
+      "size" : "128x128"
+    },
+    {
+      "filename" : "Icon-macos-256-4.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "128x128"
+    },
+    {
+      "filename" : "Icon-macos-256-6.png",
+      "idiom" : "mac",
+      "scale" : "1x",
+      "size" : "256x256"
+    },
+    {
+      "filename" : "Icon-macos-512-2.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "256x256"
+    },
+    {
+      "filename" : "Icon-macos-512-3.png",
+      "idiom" : "mac",
+      "scale" : "1x",
+      "size" : "512x512"
+    },
+    {
+      "filename" : "Icon-macos-1024-1.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "512x512"
+    }
   ],
-  "info" : { "author" : "xcode", "version" : 1 }
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
 }
