@@ -16,7 +16,7 @@ struct MenuBarView: View {
     }
 
     private var phaseImageName: String {
-        switch timerRuntime.state {
+        switch timerRuntime.status {
         case .running:
             timerRuntime.currentLocation?.kind == .phaseB ? "b.circle" : "a.circle"
         case .idle, .paused:

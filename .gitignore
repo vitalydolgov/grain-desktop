@@ -1,2 +1,3 @@
 *.xcodeproj/
+local.yml
 .DS_Store

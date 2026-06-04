@@ -1,22 +1,32 @@
-name: GrainDesktop
+name: GrainApp
+
+include:
+  - path: local.yml
+    required: false
 
 options:
   bundleIdPrefix: com.github.vitalydolgov
   deploymentTarget:
     macOS: "15.0"
+    watchOS: "11.0"
   createIntermediateGroups: true
+
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
 
 packages:
   Grain:
-    url: https://github.com/vitalydolgov/grain
-    revision: 43317fa25f8bec05889cadde712bc6c84e947e1a
+    url: git@github.com:vitalydolgov/grain.git
+    revision: dfe102786a36fae5dd4b8dfa07fac93785eb828a
 
 targets:
   GrainDesktop:
     type: application
     platform: macOS
     sources:
-      - Sources
+      - Sources/Desktop
+      - Sources/Shared
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -34,3 +44,40 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_CFBundleDisplayName: Grain
+        INFOPLIST_KEY_ATSApplicationFontsPath: Fonts
+    entitlements:
+      path: Sources/Desktop/GrainDesktop.entitlements
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
+
+  GrainWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - Sources/Watch
+      - Sources/Shared
+    dependencies:
+      - package: Grain
+        product: GrainDomain
+      - package: Grain
+        product: GrainApplication
+    settings:
+      base:
+        PRODUCT_NAME: Grain
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.Grain.watchkitapp
+        SWIFT_VERSION: "6"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Sources/Watch/Info.plist
+      properties:
+        CFBundleDisplayName: Grain
+        WKApplication: YES
+        WKWatchOnly: YES
+        UIAppFonts:
+          - Urbanist-VariableFont_wght.ttf
+          - SUSEMono-VariableFont_wght.ttf
+    entitlements:
+      path: Sources/Watch/GrainWatch.entitlements
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain

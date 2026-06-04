@@ -53,13 +53,13 @@ The Application layer emits two streams that flow back up to `RuntimeProxy`:
 
 ## Building
 
-Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
+Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). Create `local.yml` in the project root for developer-specific settings such as `DEVELOPMENT_TEAM`.
 
 ```sh
 xcodegen generate
 ```
 
-Re-run `xcodegen generate` after any source tree change.
+Re-run whenever you add, remove, or rename source files.
 
 To build:
 

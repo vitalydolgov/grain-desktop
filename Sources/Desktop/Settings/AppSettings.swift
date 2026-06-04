@@ -1,5 +1,6 @@
-import GrainDomain
 import Observation
+import GrainDomain
+import GrainApplication
 
 // MARK: Stores
 
@@ -11,12 +12,6 @@ protocol TimerSettingsStore: Sendable {
 protocol DisplaySettingsStore: Sendable {
     func load() async throws -> DisplayPreferences?
     func save(_ preferences: DisplayPreferences) async throws
-}
-
-protocol RuntimeStateStore: Sendable {
-    func load() async throws -> RuntimeState?
-    func save(_ state: RuntimeState) async throws
-    func clear() async
 }
 
 // MARK: Facades
@@ -38,26 +33,6 @@ struct TimerSettings: Sendable {
 
     func save(_ plan: SessionPlan) async throws {
         try await store.save(plan)
-    }
-}
-
-struct RuntimeStateSettings: Sendable {
-    private let store: any RuntimeStateStore
-
-    init(store: any RuntimeStateStore) {
-        self.store = store
-    }
-
-    func load() async -> RuntimeState? {
-        try? await store.load()
-    }
-
-    func save(_ state: RuntimeState) async throws {
-        try await store.save(state)
-    }
-
-    func clear() async {
-        await store.clear()
     }
 }
 

@@ -1,4 +1,5 @@
 import Foundation
+import GrainApplication
 
 actor UserDefaultsRuntimeStateStore: RuntimeStateStore {
     private let defaults: UserDefaults

@@ -1,5 +1,6 @@
 import SwiftUI
 import GrainDomain
+import GrainApplication
 
 @main
 struct GrainDesktopApp: App {
@@ -29,7 +30,7 @@ struct GrainDesktopApp: App {
                     }
                 }
                 .task {
-                    for await signal in timerRuntime.signals {
+                    for await signal in timerRuntime.signals() {
                         switch signal {
                         case .phaseCompleted(let location):
                             let labels = settings.preferences.phaseLabels
@@ -44,7 +45,11 @@ struct GrainDesktopApp: App {
                         }
                     }
                 }
-                .onChange(of: timerRuntime.state) { _, _ in
+                .task {
+                    let relay = RuntimeStateRelay(publisher: RuntimeStateSync.publisher(as: .desktop))
+                    await relay.transmit(states: await timerRuntime.runtimeStates())
+                }
+                .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()
                 }
                 .onChange(of: timerRuntime.currentLocation) { _, _ in
@@ -60,25 +65,13 @@ struct GrainDesktopApp: App {
         }
     }
 
-    @MainActor
     private func saveRuntimeState() {
-        let state = timerRuntime.state
-        let location = timerRuntime.currentLocation
-        let phaseStartedAt = timerRuntime.phaseStartedAt
-        let plan = timerRuntime.plan
+        guard let timer = timerRuntime.timer else { return }
+        let state = RuntimeState(snapshot: timer, plan: timerRuntime.plan)
         Task {
-            switch state {
+            switch timer.status {
             case .running, .paused:
-                guard let location, let phaseStartedAt else { return }
-                let elapsed = Duration(millis: UInt64(max(0, Date().timeIntervalSince(phaseStartedAt))) * 1000)
-                let runtimeState = RuntimeState(
-                    plan: plan,
-                    location: location,
-                    phaseStartedAt: phaseStartedAt,
-                    elapsedInPhase: elapsed,
-                    wasRunning: state == .running
-                )
-                try? await settings.runtimeState.save(runtimeState)
+                try? await settings.runtimeState.save(state)
             case .idle, .completed:
                 await settings.runtimeState.clear()
             }

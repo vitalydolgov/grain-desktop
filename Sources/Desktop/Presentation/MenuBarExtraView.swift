@@ -16,7 +16,7 @@ struct MenuBarExtraView: View {
                 phaseBName: settings.preferences.phaseLabels.phaseB
             )
             Divider()
-            TimerActions(runState: timerRuntime.state)
+            TimerActions(runStatus: timerRuntime.status)
             Divider()
             TimerSettingsRow()
             Divider()
@@ -63,10 +63,10 @@ private struct TimerHeader: View {
 
 private struct TimerActions: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    let runState: SessionState
+    let runStatus: SessionStatus
 
     var body: some View {
-        switch runState {
+        switch runStatus {
         case .running:
             MenuRow("Pause") { timerRuntime.pause() }
         case .paused:
@@ -75,7 +75,7 @@ private struct TimerActions: View {
             MenuRow("Start") { timerRuntime.start() }
         }
         MenuRow("Reset") { timerRuntime.reset() }
-            .disabled(runState == .idle)
+            .disabled(runStatus == .idle)
     }
 }
 

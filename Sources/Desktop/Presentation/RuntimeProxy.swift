@@ -11,7 +11,8 @@ final class RuntimeProxy {
             Task { await runtime.setPlan(plan) }
         }
     }
-    private(set) var state: SessionState = .idle
+    private(set) var timer: TimerSnapshot?
+    private(set) var status: SessionStatus = .idle
     private(set) var currentLocation: PhaseLocation?
     private(set) var phaseStartedAt: Date? = nil
     private(set) var remainingTime: Duration = SessionPlan.default.durationA
@@ -21,23 +22,32 @@ final class RuntimeProxy {
     init(clock: any ClockSource = SystemClock()) {
         let runtime = TimerRuntime(clock: clock)
         self.runtime = runtime
-        Task { [weak self, snapshots = runtime.snapshots] in
-            for await snapshot in snapshots {
-                self?.state = snapshot.state
-                self?.currentLocation = snapshot.currentLocation
-                self?.phaseStartedAt = snapshot.phaseStartedAt
-                self?.remainingTime = snapshot.remainingTime
+        Task { [weak self] in
+            for await state in await runtime.makeRuntimeStateStream() {
+                guard let self else { break }
+                self.timer = state.timer
+                self.status = state.timer.status
+                self.currentLocation = state.timer.currentLocation
+                self.phaseStartedAt = state.timer.phaseStartedAt
+                self.remainingTime = state.timer.remainingTime
             }
         }
     }
 
-    var signals: AsyncStream<TimerSignal> { runtime.signals }
+    // MARK: Streams
+
+    func signals() -> AsyncStream<TimerSignal> {
+        runtime.signals
+    }
+
+    func runtimeStates() async -> AsyncStream<RuntimeState> {
+        await runtime.makeRuntimeStateStream()
+    }
+
+    // MARK: Commands
 
     func restore(from state: RuntimeState) {
-        let elapsed = state.wasRunning
-            ? Duration(millis: UInt64(max(0, Date().timeIntervalSince(state.phaseStartedAt))) * 1000)
-            : state.elapsedInPhase
-        Task { await runtime.restore(plan: state.plan, location: state.location, elapsed: elapsed, wasRunning: state.wasRunning) }
+        Task { await runtime.restore(timer: state.timer, plan: state.plan) }
     }
 
     func start() {
