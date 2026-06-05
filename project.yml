@@ -79,6 +79,8 @@ targets:
         CFBundleDisplayName: Grain
         WKApplication: YES
         WKWatchOnly: YES
+        WKBackgroundModes:
+          - physical-therapy
         UIAppFonts:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf

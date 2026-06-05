@@ -4,6 +4,7 @@ import GrainApplication
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @State private var showingSettings = false
 
     var body: some View {
         ZStack {
@@ -12,14 +13,13 @@ struct TimerView: View {
             ProgressRing(fraction: phaseRemainingFraction, color: phaseColor)
                 .padding(-6)
             VStack(spacing: 2) {
-                if let kind = timerRuntime.currentLocation?.kind {
-                    Text(phaseLabel(kind))
-                        .font(.custom("Urbanist", size: 17, relativeTo: .headline).weight(.bold))
-                        .textCase(.uppercase)
-                        .foregroundStyle(phaseColor)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
+                Text(phaseLabel(timerRuntime.currentLocation?.kind ?? .phaseA))
+                    .font(.custom("Urbanist", size: 17, relativeTo: .headline).weight(.bold))
+                    .textCase(.uppercase)
+                    .foregroundStyle(phaseColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .opacity(timerRuntime.currentLocation == nil ? 0 : 1)
                 Text(format(timerRuntime.remainingTime))
                     .font(.custom("SUSE Mono", size: 40))
                     .foregroundStyle(.white)
@@ -28,10 +28,17 @@ struct TimerView: View {
                         .font(.custom("Urbanist", size: 15, relativeTo: .subheadline).weight(.semibold))
                         .foregroundStyle(.white.opacity(0.5))
                 }
+                TimerControls(status: timerRuntime.status) { showingSettings = true }
+                    .padding(.top, 6)
             }
             .padding(.horizontal, 28)
         }
         .animation(.linear(duration: 0.3), value: phaseRemainingFraction)
+        .sheet(isPresented: $showingSettings) {
+            NavigationStack {
+                SettingsView()
+            }
+        }
     }
 
     private var phaseRemainingFraction: Double {
@@ -65,6 +72,55 @@ struct TimerView: View {
         case .phaseB: Color(red: 0.96, green: 0.72, blue: 0.16)
         case nil: Color(white: 0.3)
         }
+    }
+}
+
+private struct TimerControls: View {
+    @Environment(RuntimeProxy.self) private var timerRuntime
+    let status: SessionStatus
+    let onSettings: () -> Void
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Button(action: togglePlayback) {
+                Image(systemName: playbackIcon)
+                    .font(.system(size: 18, weight: .bold))
+                    .frame(width: 24)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.white)
+            if isStopped {
+                Button(action: onSettings) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 16, weight: .bold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.white.opacity(0.8))
+            } else {
+                Button { timerRuntime.reset() } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 16, weight: .bold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.white.opacity(0.8))
+            }
+        }
+    }
+
+    private var isStopped: Bool {
+        status == .idle || status == .completed
+    }
+
+    private func togglePlayback() {
+        switch status {
+        case .running: timerRuntime.pause()
+        case .paused: timerRuntime.resume()
+        case .idle, .completed: timerRuntime.start()
+        }
+    }
+
+    private var playbackIcon: String {
+        status == .running ? "pause.fill" : "play.fill"
     }
 }
 

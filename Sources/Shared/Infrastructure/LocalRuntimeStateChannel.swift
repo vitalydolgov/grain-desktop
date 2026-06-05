@@ -10,11 +10,13 @@ private extension RuntimeStateSync.Source {
 private enum LocalFile {
     static func url(_ filename: String) -> URL? {
         let home: URL
-        #if targetEnvironment(simulator)
+        #if os(watchOS) && targetEnvironment(simulator)
         guard let hostHome = ProcessInfo.processInfo.environment["SIMULATOR_HOST_HOME"] else { return nil }
         home = URL(fileURLWithPath: hostHome)
-        #else
+        #elseif os(macOS)
         home = FileManager.default.homeDirectoryForCurrentUser
+        #elseif os(watchOS)
+        return nil
         #endif
         return home.appendingPathComponent("Library/Caches/Grain/\(filename)")
     }
