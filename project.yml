@@ -7,8 +7,8 @@ include:
 options:
   bundleIdPrefix: com.github.vitalydolgov
   deploymentTarget:
-    macOS: "15.0"
-    watchOS: "11.0"
+    macOS: "14.0"
+    watchOS: "10.0"
   createIntermediateGroups: true
 
 settings:
@@ -22,7 +22,7 @@ settings:
 packages:
   Grain:
     url: https://github.com/vitalydolgov/grain
-    revision: 20f361876819d29b2e12e5bffc8f5d032ea59de5
+    revision: 3a3a07434e67fb294d4ee47cd015a471b5e99545
 
 targets:
   GrainDesktop:
