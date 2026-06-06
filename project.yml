@@ -30,7 +30,11 @@ targets:
     platform: macOS
     sources:
       - Sources/Desktop
-      - Sources/Shared
+      - path: Sources/Shared
+        excludes:
+          - Resources/**
+      - path: Fonts
+        type: folder
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -59,7 +63,11 @@ targets:
     platform: watchOS
     sources:
       - Sources/Watch
-      - Sources/Shared
+      - path: Sources/Shared
+        excludes:
+          - Resources/**
+      - path: Fonts/SUSEMono-VariableFont_wght.ttf
+      - path: Fonts/Urbanist-VariableFont_wght.ttf
     dependencies:
       - package: Grain
         product: GrainDomain
