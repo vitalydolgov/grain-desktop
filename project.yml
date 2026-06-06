@@ -30,7 +30,9 @@ targets:
     platform: macOS
     sources:
       - Sources/Desktop
-      - Sources/Shared
+      - path: Sources/Shared
+        excludes:
+          - Resources/**
     buildPhases:
       - type: copyFiles
         name: Copy Fonts
@@ -67,7 +69,9 @@ targets:
     platform: watchOS
     sources:
       - Sources/Watch
-      - Sources/Shared
+      - path: Sources/Shared
+        excludes:
+          - Resources/**
       - path: Resources/Fonts/SUSEMono-VariableFont_wght.ttf
       - path: Resources/Fonts/Urbanist-VariableFont_wght.ttf
     dependencies:
