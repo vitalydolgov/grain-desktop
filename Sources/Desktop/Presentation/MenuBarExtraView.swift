@@ -1,20 +1,12 @@
 import SwiftUI
 import GrainDomain
-import GrainApplication
 
 struct MenuBarExtraView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TimerHeader(
-                displayTime: format(timerRuntime.remainingTime),
-                currentCycle: timerRuntime.currentLocation?.cycle ?? 1,
-                phaseKind: timerRuntime.currentLocation?.kind ?? .phaseA,
-                phaseAName: settings.preferences.phaseLabels.phaseA,
-                phaseBName: settings.preferences.phaseLabels.phaseB
-            )
+            TimerHeader(displayTime: format(timerRuntime.remainingTime), tag: currentIntervalTag)
             Divider()
             TimerActions(runStatus: timerRuntime.status)
             Divider()
@@ -25,6 +17,13 @@ struct MenuBarExtraView: View {
         .frame(width: 200)
     }
 
+    private var currentIntervalTag: IntervalTag? {
+        let idx = timerRuntime.currentIndex
+        let intervals = timerRuntime.plan.intervals
+        guard timerRuntime.status != .idle, idx.index < intervals.count else { return nil }
+        return intervals[idx.index].tag
+    }
+
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
         return String(format: "%02d:%02d", total / 60, total % 60)
@@ -33,27 +32,18 @@ struct MenuBarExtraView: View {
 
 private struct TimerHeader: View {
     let displayTime: String
-    let currentCycle: Int
-    let phaseKind: PhaseKind?
-    let phaseAName: String
-    let phaseBName: String
+    let tag: IntervalTag?
 
     var body: some View {
         HStack {
             Text(displayTime)
                 .font(.system(.title, design: .monospaced))
                 .monospacedDigit()
-            Text("#\(currentCycle)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
             Spacer()
-            if let kind = phaseKind {
-                HStack(spacing: 4) {
-                    Image(systemName: kind == .phaseA ? "a.circle" : "b.circle")
-                    Text(kind == .phaseA ? phaseAName : phaseBName)
-                }
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            if let tag {
+                Text("Phase \(tag == .a ? "A" : "B")")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 12)

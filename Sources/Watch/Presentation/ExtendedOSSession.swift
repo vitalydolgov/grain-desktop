@@ -1,7 +1,7 @@
 import WatchKit
 
 @MainActor
-final class ExtendedRuntimeManager: NSObject, @MainActor WKExtendedRuntimeSessionDelegate {
+final class ExtendedOSSession: NSObject, @MainActor WKExtendedRuntimeSessionDelegate {
     private var session: WKExtendedRuntimeSession?
 
     func start() {

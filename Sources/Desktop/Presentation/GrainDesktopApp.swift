@@ -32,10 +32,11 @@ struct GrainDesktopApp: App {
                 .task {
                     for await signal in timerRuntime.signals() {
                         switch signal {
-                        case .phaseCompleted(let location):
-                            let labels = settings.preferences.phaseLabels
-                            let name = location.kind == .phaseA ? labels.phaseA : labels.phaseB
-                            NotificationService.notifyPhaseCompleted(phaseName: name)
+                        case .intervalCompleted(let idx):
+                            let plan = timerRuntime.plan
+                            guard idx.index < plan.intervals.count else { break }
+                            let tag = plan.intervals[idx.index].tag
+                            NotificationService.notifyPhaseCompleted(tag: tag)
                         case .sessionCompleted:
                             NotificationService.notifySessionCompleted()
                         case .sessionCompletedWhileAway:
@@ -52,7 +53,7 @@ struct GrainDesktopApp: App {
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()
                 }
-                .onChange(of: timerRuntime.currentLocation) { _, _ in
+                .onChange(of: timerRuntime.currentIndex.index) { _, _ in
                     saveRuntimeState()
                 }
         }

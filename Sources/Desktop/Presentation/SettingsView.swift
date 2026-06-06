@@ -7,13 +7,13 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            SettingsPlanTab(displayPrefs: $displayPrefs)
+            SettingsPlanTab()
                 .tabItem { Label("Plan", systemImage: "timer") }
 
             SettingsAppearanceTab(menuBarFormat: $displayPrefs.menuBarLabelFormat)
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
-        .frame(width: 300, height: 400)
+        .frame(width: 300, height: 300)
         .task {
             displayPrefs = await settings.display.load()
         }

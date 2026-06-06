@@ -1,4 +1,5 @@
 import UserNotifications
+import GrainDomain
 
 @MainActor
 enum NotificationService {
@@ -12,8 +13,8 @@ enum NotificationService {
         }
     }
 
-    static func notifyPhaseCompleted(phaseName: String) {
-        send(title: "\(phaseName) completed")
+    static func notifyPhaseCompleted(tag: IntervalTag) {
+        send(title: "Phase \(tag == .a ? "A" : "B") completed")
     }
 
     static func notifySessionCompleted(whileAway: Bool = false) {

@@ -8,17 +8,12 @@ struct SettingsView: View {
     var body: some View {
         List {
             NavigationLink {
-                ValuePicker(title: "Rounds", range: 1...6, unit: nil, amount: $draft.rounds)
-            } label: {
-                SettingRow(title: "Rounds", value: "\(draft.rounds)")
-            }
-            NavigationLink {
-                ValuePicker(title: "Phase A", range: 1...60, unit: "min", amount: $draft.minutesA)
+                ValuePicker(title: "Phase A", range: 1...90, unit: "min", amount: $draft.minutesA)
             } label: {
                 SettingRow(title: "Phase A", value: "\(draft.minutesA) min")
             }
             NavigationLink {
-                ValuePicker(title: "Phase B", range: 1...60, unit: "min", amount: $draft.minutesB)
+                ValuePicker(title: "Phase B", range: 1...90, unit: "min", amount: $draft.minutesB)
             } label: {
                 SettingRow(title: "Phase B", value: "\(draft.minutesB) min")
             }
@@ -66,23 +61,20 @@ private struct ValuePicker: View {
 }
 
 private struct PlanDraft: Equatable {
-    var rounds = SessionPlan.default.totalCycles
-    var minutesA = Int(SessionPlan.default.durationA.seconds / 60)
-    var minutesB = Int(SessionPlan.default.durationB.seconds / 60)
+    var minutesA = 50
+    var minutesB = 15
 
     init() {}
 
     init(from plan: SessionPlan) {
-        rounds = plan.totalCycles
-        minutesA = max(1, Int(plan.durationA.seconds / 60))
-        minutesB = max(1, Int(plan.durationB.seconds / 60))
+        minutesA = max(1, Int((plan.intervals.first { $0.tag == .a }?.duration.seconds ?? 3000) / 60))
+        minutesB = max(1, Int((plan.intervals.first { $0.tag == .b }?.duration.seconds ?? 900) / 60))
     }
 
     var plan: SessionPlan {
-        SessionPlan(
-            durationA: .seconds(UInt64(minutesA) * 60),
-            durationB: .seconds(UInt64(minutesB) * 60),
-            totalCycles: rounds
-        )
+        SessionPlan(intervals: [
+            Interval(tag: .a, duration: .seconds(UInt64(minutesA) * 60)),
+            Interval(tag: .b, duration: .seconds(UInt64(minutesB) * 60))
+        ])
     }
 }

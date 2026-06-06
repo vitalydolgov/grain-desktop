@@ -4,7 +4,9 @@ import GrainApplication
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(RuntimeSynchronizer.self) private var synchronizer
     @State private var showingSettings = false
+    @State private var showingRemoteSyncPrompt = false
 
     var body: some View {
         ZStack {
@@ -13,22 +15,17 @@ struct TimerView: View {
             ProgressRing(fraction: phaseRemainingFraction, color: phaseColor)
                 .padding(-6)
             VStack(spacing: 2) {
-                Text(phaseLabel(timerRuntime.currentLocation?.kind ?? .phaseA))
+                Text(phaseLabel(currentTag ?? .a))
                     .font(.custom("Urbanist", size: 17, relativeTo: .headline).weight(.bold))
                     .textCase(.uppercase)
                     .foregroundStyle(phaseColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .opacity(timerRuntime.currentLocation == nil ? 0 : 1)
+                    .opacity(timerRuntime.status == .idle ? 0 : 1)
                 Text(format(timerRuntime.remainingTime))
                     .font(.custom("SUSE Mono", size: 40))
                     .foregroundStyle(.white)
-                if let round = roundText {
-                    Text(round)
-                        .font(.custom("Urbanist", size: 15, relativeTo: .subheadline).weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.5))
-                }
-                TimerControls(status: timerRuntime.status) { showingSettings = true }
+                ControlPanel(status: timerRuntime.status) { showingSettings = true }
                     .padding(.top, 6)
             }
             .padding(.horizontal, 28)
@@ -39,26 +36,39 @@ struct TimerView: View {
                 SettingsView()
             }
         }
+        .alert("Sync with Mac?", isPresented: $showingRemoteSyncPrompt) {
+            Button("Sync") { synchronizer.acceptSync() }
+            Button("Not Now", role: .cancel) { synchronizer.declineSync() }
+        } message: {
+            Text("A session is running on your Mac.")
+        }
+        .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
+            showingRemoteSyncPrompt = isPending
+        }
+    }
+
+    private var currentTag: IntervalTag? {
+        let idx = timerRuntime.currentIndex
+        let intervals = timerRuntime.plan.intervals
+        guard idx.index < intervals.count else { return nil }
+        return intervals[idx.index].tag
     }
 
     private var phaseRemainingFraction: Double {
-        guard let location = timerRuntime.currentLocation else { return 1 }
-        let total = timerRuntime.plan.duration(for: location).millis
+        let idx = timerRuntime.currentIndex
+        let intervals = timerRuntime.plan.intervals
+        guard idx.index < intervals.count else { return 1 }
+        let total = intervals[idx.index].duration.millis
         guard total > 0 else { return 1 }
         let clamped = min(timerRuntime.remainingTime.millis, total)
         return Double(clamped) / Double(total)
     }
 
-    private func phaseLabel(_ kind: PhaseKind) -> String {
-        switch kind {
-        case .phaseA: "Phase A"
-        case .phaseB: "Phase B"
+    private func phaseLabel(_ tag: IntervalTag) -> String {
+        switch tag {
+        case .a: "Phase A"
+        case .b: "Phase B"
         }
-    }
-
-    private var roundText: String? {
-        guard let cycle = timerRuntime.currentLocation?.cycle else { return nil }
-        return "Round \(cycle) of \(timerRuntime.plan.totalCycles)"
     }
 
     private func format(_ duration: Duration) -> String {
@@ -67,42 +77,53 @@ struct TimerView: View {
     }
 
     private var phaseColor: Color {
-        switch timerRuntime.currentLocation?.kind {
-        case .phaseA: Color(red: 0.23, green: 0.62, blue: 1.0)
-        case .phaseB: Color(red: 0.96, green: 0.72, blue: 0.16)
+        switch currentTag {
+        case .a: Color(red: 0.23, green: 0.62, blue: 1.0)
+        case .b: Color(red: 0.96, green: 0.72, blue: 0.16)
         case nil: Color(white: 0.3)
         }
     }
 }
 
-private struct TimerControls: View {
-    @Environment(RuntimeProxy.self) private var timerRuntime
+private extension SyncMode {
+    var isPending: Bool { if case .pending = self { true } else { false } }
+}
+
+private struct ControlPanel: View {
     let status: SessionStatus
     let onSettings: () -> Void
+    @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(RuntimeSynchronizer.self) private var synchronizer
 
     var body: some View {
-        HStack(spacing: 16) {
-            Button(action: togglePlayback) {
-                Image(systemName: playbackIcon)
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 24)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.white)
-            if isStopped {
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 16, weight: .bold))
+        if case .synced = synchronizer.syncMode {
+            Image(systemName: "personalhotspot")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white.opacity(0.6))
+        } else {
+            HStack(spacing: 16) {
+                Button(action: togglePlayback) {
+                    Image(systemName: playbackIcon)
+                        .font(.system(size: 18, weight: .bold))
+                        .frame(width: 24)
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.white.opacity(0.8))
-            } else {
-                Button { timerRuntime.reset() } label: {
-                    Image(systemName: "arrow.counterclockwise")
-                        .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.white)
+                if isStopped {
+                    Button(action: onSettings) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 16, weight: .bold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.white.opacity(0.8))
+                } else {
+                    Button { timerRuntime.reset() } label: {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 16, weight: .bold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.white.opacity(0.8))
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(.white.opacity(0.8))
             }
         }
     }

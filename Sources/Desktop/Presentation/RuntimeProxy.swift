@@ -6,16 +6,16 @@ import GrainApplication
 @Observable
 @MainActor
 final class RuntimeProxy {
-    var plan: SessionPlan = .default {
+    var plan: SessionPlan = .empty {
         didSet {
             Task { await runtime.setPlan(plan) }
         }
     }
     private(set) var timer: TimerSnapshot?
     private(set) var status: SessionStatus = .idle
-    private(set) var currentLocation: PhaseLocation?
-    private(set) var phaseStartedAt: Date? = nil
-    private(set) var remainingTime: Duration = SessionPlan.default.durationA
+    private(set) var currentIndex: IntervalIndex = IntervalIndex(index: 0)
+    private(set) var intervalStartedAt: Date? = nil
+    private(set) var remainingTime: Duration = .zero
 
     private let runtime: TimerRuntime
 
@@ -27,8 +27,8 @@ final class RuntimeProxy {
                 guard let self else { break }
                 self.timer = state.timer
                 self.status = state.timer.status
-                self.currentLocation = state.timer.currentLocation
-                self.phaseStartedAt = state.timer.phaseStartedAt
+                self.currentIndex = state.timer.currentIndex
+                self.intervalStartedAt = state.timer.intervalStartedAt
                 self.remainingTime = state.timer.remainingTime
             }
         }

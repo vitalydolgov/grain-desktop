@@ -2,6 +2,13 @@ import Observation
 import GrainDomain
 import GrainApplication
 
+private extension SessionPlan {
+    static let `default` = SessionPlan(intervals: [
+        Interval(tag: .a, duration: .seconds(50 * 60)),
+        Interval(tag: .b, duration: .seconds(15 * 60))
+    ])
+}
+
 // MARK: Stores
 
 protocol TimerSettingsStore: Sendable {

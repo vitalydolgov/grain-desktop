@@ -2,60 +2,15 @@ import SwiftUI
 import GrainDomain
 
 struct SettingsPlanTab: View {
-    @Binding var displayPrefs: DisplayPreferences
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
     @State private var planDraft = PlanDraft()
-    @State private var selectedPhase = 0
-    @State private var showCycleLengthHelp = false
 
     var body: some View {
         Form {
             Section {
-                Stepper("Repeat: \(planDraft.totalCycles)", value: $planDraft.totalCycles, in: 1...6)
-            }
-            Section {
-                HStack {
-                    Spacer()
-                    Picker("", selection: $selectedPhase) {
-                        Text("Phase A").tag(0)
-                        Text("Phase B").tag(1)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                    Spacer()
-                }
-                if selectedPhase == 0 {
-                    TextField("Label", text: $displayPrefs.phaseLabels.phaseA)
-                    Stepper("Duration: \(planDraft.minutesA) min", value: $planDraft.minutesA, in: 1...60)
-                } else {
-                    TextField("Label", text: $displayPrefs.phaseLabels.phaseB)
-                    Stepper("Duration: \(planDraft.minutesB) min", value: $planDraft.minutesB, in: 1...60)
-                }
-            }
-            Section {
-                HStack {
-                    HStack(spacing: 4) {
-                        Text("Cycle length")
-                        Button {
-                            showCycleLengthHelp.toggle()
-                        } label: {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .popover(isPresented: $showCycleLengthHelp) {
-                            Text("Ratio controls how quickly phase durations scale across cycles.")
-                                .padding()
-                                .frame(width: 200)
-                        }
-                    }
-                    Spacer()
-                    Text(cycleLengthDescription).foregroundStyle(.secondary)
-                    Stepper("", value: $planDraft.cycleLengthMultiplier, in: 0.7...1.3, step: 0.1)
-                        .labelsHidden()
-                }
+                Stepper("Phase A: \(planDraft.minutesA) min", value: $planDraft.minutesA, in: 1...90)
+                Stepper("Phase B: \(planDraft.minutesB) min", value: $planDraft.minutesB, in: 1...90)
             }
             Section {
                 VStack {
@@ -88,12 +43,10 @@ struct SettingsPlanTab: View {
     }
 
     private func makePlan() -> SessionPlan {
-        SessionPlan(
-            durationA: .seconds(UInt64(planDraft.minutesA) * 60),
-            durationB: .seconds(UInt64(planDraft.minutesB) * 60),
-            totalCycles: planDraft.totalCycles,
-            curve: planDraft.curve
-        )
+        let durationA = Duration.seconds(UInt64(planDraft.minutesA) * 60)
+        let durationB = Duration.seconds(UInt64(planDraft.minutesB) * 60)
+        return SessionPlan(intervals: [Interval(tag: .a, duration: durationA),
+                                       Interval(tag: .b, duration: durationB)])
     }
 
     private func savePlan() {
@@ -105,12 +58,6 @@ struct SettingsPlanTab: View {
     }
 
     private var totalDuration: Duration { makePlan().totalDuration }
-
-    private var cycleLengthDescription: String {
-        let m = planDraft.cycleLengthMultiplier
-        let mode = m > 1.0 + 0.05 ? "Growth" : m < 1.0 - 0.05 ? "Decay" : "Constant"
-        return String(format: "%@ ×%.1f", mode, m)
-    }
 
     private func estimatedEndText(from now: Date) -> String {
         let end = now.addingTimeInterval(TimeInterval(totalDuration.seconds))
@@ -147,32 +94,13 @@ private struct StartButton: View {
 }
 
 private struct PlanDraft: Equatable {
-    var totalCycles = SessionPlan.default.totalCycles
-    var minutesA = 50
-    var minutesB = 10
-    var cycleLengthMultiplier: Double = 1.0
-
-    var curve: Curve {
-        if abs(cycleLengthMultiplier - 1.0) < 0.05 { return .constant }
-        return cycleLengthMultiplier > 1.0
-            ? .growth(ratio: cycleLengthMultiplier)
-            : .decay(ratio: 2.0 - cycleLengthMultiplier)
-    }
-
-    static func multiplier(from curve: Curve) -> Double {
-        switch curve {
-        case .constant:           1.0
-        case .growth(let ratio):  ratio
-        case .decay(let ratio):   2.0 - ratio
-        }
-    }
+    var minutesA = 25
+    var minutesB = 5
 }
 
 private extension PlanDraft {
     init(from plan: SessionPlan) {
-        totalCycles = plan.totalCycles
-        minutesA = Int(plan.durationA.seconds / 60)
-        minutesB = Int(plan.durationB.seconds / 60)
-        cycleLengthMultiplier = Self.multiplier(from: plan.curve)
+        minutesA = Int((plan.intervals.first { $0.tag == .a }?.duration.seconds ?? 1500) / 60)
+        minutesB = Int((plan.intervals.first { $0.tag == .b }?.duration.seconds ?? 300) / 60)
     }
 }

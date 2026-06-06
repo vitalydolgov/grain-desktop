@@ -21,8 +21,8 @@ settings:
 
 packages:
   Grain:
-    url: git@github.com:vitalydolgov/grain.git
-    revision: dfe102786a36fae5dd4b8dfa07fac93785eb828a
+    url: https://github.com/vitalydolgov/grain
+    revision: 20f361876819d29b2e12e5bffc8f5d032ea59de5
 
 targets:
   GrainDesktop:
@@ -80,7 +80,7 @@ targets:
         WKApplication: YES
         WKWatchOnly: YES
         WKBackgroundModes:
-          - physical-therapy
+          - self-care
         UIAppFonts:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf
@@ -88,3 +88,5 @@ targets:
       path: Sources/Watch/GrainWatch.entitlements
       properties:
         com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
+        com.apple.developer.watchkit.background-modes:
+          - self-care

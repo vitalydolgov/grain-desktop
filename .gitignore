@@ -1,5 +1,6 @@
 # XcodeGen
 *.xcodeproj/
+*.entitlements
 Info.plist
 local.yml
 

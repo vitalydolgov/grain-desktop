@@ -5,39 +5,34 @@ import GrainApplication
 
 @Observable
 @MainActor
-final class RuntimeProxy {
+final class RuntimeProxy: RuntimeSynchronizerDelegate {
     private(set) var status: SessionStatus = .idle
-    private(set) var currentLocation: PhaseLocation?
-    private(set) var remainingTime: Duration = SessionPlan.default.durationA
-    private(set) var plan: SessionPlan = .default
+    private(set) var currentIndex: IntervalIndex = IntervalIndex(index: 0)
+    private(set) var remainingTime: Duration = .zero
+    private(set) var plan: SessionPlan = .empty
+
+    nonisolated let statuses: AsyncStream<SessionStatus>
+    private let statusContn: AsyncStream<SessionStatus>.Continuation
 
     private let runtime: TimerRuntime
-    private let runtimeSession = ExtendedRuntimeManager()
 
-    init(clock: any ClockSource = SystemClock()) {
-        let runtime = TimerRuntime(clock: clock)
+    init(runtime: TimerRuntime) {
         self.runtime = runtime
+        let (stream, contn) = AsyncStream.makeStream(of: SessionStatus.self)
+        self.statuses = stream
+        self.statusContn = contn
         Task { [weak self] in
             for await state in await runtime.makeRuntimeStateStream() {
                 guard let self else { break }
                 let newStatus = state.timer.status
                 if newStatus != self.status {
-                    self.updateSession(for: newStatus)
+                    self.statusContn.yield(newStatus)
                 }
                 self.status = newStatus
-                self.currentLocation = state.timer.currentLocation
+                self.currentIndex = state.timer.currentIndex
                 self.remainingTime = state.timer.remainingTime
                 self.plan = state.plan
             }
-        }
-    }
-
-    private func updateSession(for status: SessionStatus) {
-        switch status {
-        case .running:
-            runtimeSession.start()
-        case .idle, .paused, .completed:
-            runtimeSession.stop()
         }
     }
 
@@ -45,8 +40,8 @@ final class RuntimeProxy {
         runtime.signals
     }
 
-    func restore(from state: RuntimeState) {
-        Task { await runtime.restore(timer: state.timer, plan: state.plan) }
+    func restore(timer: TimerSnapshot, plan: SessionPlan) {
+        Task { await runtime.restore(timer: timer, plan: plan) }
     }
 
     func setPlan(_ plan: SessionPlan) {
