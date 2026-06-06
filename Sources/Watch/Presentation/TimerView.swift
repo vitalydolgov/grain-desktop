@@ -31,6 +31,7 @@ struct TimerView: View {
                             .foregroundStyle(.white.opacity(0.6))
                     } else {
                         CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
+                            .foregroundStyle(.white)
                     }
                 }
                 .padding(.top, 6)
