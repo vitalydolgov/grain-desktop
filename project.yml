@@ -33,7 +33,7 @@ targets:
       - path: Sources/Shared
         excludes:
           - Resources/**
-      - path: Fonts
+      - path: Resources/Fonts
         type: folder
     dependencies:
       - package: Grain
@@ -66,8 +66,8 @@ targets:
       - path: Sources/Shared
         excludes:
           - Resources/**
-      - path: Fonts/SUSEMono-VariableFont_wght.ttf
-      - path: Fonts/Urbanist-VariableFont_wght.ttf
+      - path: Resources/Fonts/SUSEMono-VariableFont_wght.ttf
+      - path: Resources/Fonts/Urbanist-VariableFont_wght.ttf
     dependencies:
       - package: Grain
         product: GrainDomain
