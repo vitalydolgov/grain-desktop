@@ -1,19 +1,10 @@
 import Observation
-import GrainDomain
-import GrainApplication
-
-private extension SessionPlan {
-    static let `default` = SessionPlan(intervals: [
-        Interval(tag: .a, duration: .seconds(50 * 60)),
-        Interval(tag: .b, duration: .seconds(15 * 60))
-    ])
-}
 
 // MARK: Stores
 
-protocol TimerSettingsStore: Sendable {
-    func load() async throws -> SessionPlan?
-    func save(_ plan: SessionPlan) async throws
+protocol PlanSettingsStore: Sendable {
+    func load() async throws -> PlanConfiguration?
+    func save(_ configuration: PlanConfiguration) async throws
 }
 
 protocol DisplaySettingsStore: Sendable {
@@ -23,14 +14,14 @@ protocol DisplaySettingsStore: Sendable {
 
 // MARK: Facades
 
-struct TimerSettings: Sendable {
-    private let store: any TimerSettingsStore
+struct PlanSettings: Sendable {
+    private let store: any PlanSettingsStore
 
-    init(store: any TimerSettingsStore) {
+    init(store: any PlanSettingsStore) {
         self.store = store
     }
 
-    func load() async -> SessionPlan {
+    func load() async -> PlanConfiguration {
         do {
             return try await store.load() ?? .default
         } catch {
@@ -38,8 +29,8 @@ struct TimerSettings: Sendable {
         }
     }
 
-    func save(_ plan: SessionPlan) async throws {
-        try await store.save(plan)
+    func save(_ configuration: PlanConfiguration) async throws {
+        try await store.save(configuration)
     }
 }
 
@@ -68,13 +59,13 @@ struct DisplaySettings: Sendable {
 @MainActor
 @Observable
 final class AppSettings {
-    let timer: TimerSettings
+    let plan: PlanSettings
     let display: DisplaySettings
     let runtimeState: RuntimeStateSettings
     var preferences: DisplayPreferences = .default
 
-    init(timer: TimerSettings, display: DisplaySettings, runtimeState: RuntimeStateSettings) {
-        self.timer = timer
+    init(plan: PlanSettings, display: DisplaySettings, runtimeState: RuntimeStateSettings) {
+        self.plan = plan
         self.display = display
         self.runtimeState = runtimeState
     }

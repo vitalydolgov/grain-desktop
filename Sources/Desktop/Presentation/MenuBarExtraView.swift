@@ -41,7 +41,7 @@ private struct TimerHeader: View {
                 .monospacedDigit()
             Spacer()
             if let tag {
-                Text("Phase \(tag == .a ? "A" : "B")")
+                Text(tag.label)
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

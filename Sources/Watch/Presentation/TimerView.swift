@@ -15,15 +15,14 @@ struct TimerView: View {
             ProgressRing(fraction: phaseRemainingFraction, color: phaseColor)
                 .padding(-6)
             VStack(spacing: 2) {
-                Text(phaseLabel(currentTag ?? .a))
-                    .font(.custom("Urbanist", size: 17, relativeTo: .headline).weight(.bold))
-                    .textCase(.uppercase)
+                Text((currentTag ?? .a).label)
+                    .font(.customRegular(size: 20))
                     .foregroundStyle(phaseColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     .opacity(timerRuntime.status == .idle ? 0 : 1)
                 Text(format(timerRuntime.remainingTime))
-                    .font(.custom("SUSE Mono", size: 40))
+                    .font(.customMonospaced(size: 40))
                     .foregroundStyle(.white)
                 ControlPanel(status: timerRuntime.status) { showingSettings = true }
                     .padding(.top, 6)
@@ -64,24 +63,13 @@ struct TimerView: View {
         return Double(clamped) / Double(total)
     }
 
-    private func phaseLabel(_ tag: IntervalTag) -> String {
-        switch tag {
-        case .a: "Phase A"
-        case .b: "Phase B"
-        }
-    }
-
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
         return String(format: "%d:%02d", total / 60, total % 60)
     }
 
     private var phaseColor: Color {
-        switch currentTag {
-        case .a: Color(red: 0.23, green: 0.62, blue: 1.0)
-        case .b: Color(red: 0.96, green: 0.72, blue: 0.16)
-        case nil: Color(white: 0.3)
-        }
+        currentTag?.color ?? Color(white: 0.3)
     }
 }
 

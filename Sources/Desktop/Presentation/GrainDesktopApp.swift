@@ -5,7 +5,7 @@ import GrainApplication
 @main
 struct GrainDesktopApp: App {
     @State private var settings = AppSettings(
-        timer: TimerSettings(store: UserDefaultsTimerSettingsStore()),
+        plan: PlanSettings(store: UserDefaultsPlanSettingsStore()),
         display: DisplaySettings(store: UserDefaultsDisplaySettingsStore()),
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
@@ -21,7 +21,9 @@ struct GrainDesktopApp: App {
                 .environment(timerRuntime)
                 .environment(settings)
                 .task {
-                    timerRuntime.plan = await settings.timer.load()
+                    if let plan = await settings.plan.load().makePlan() {
+                        timerRuntime.plan = plan
+                    }
                     settings.preferences = await settings.display.load()
                     NotificationService.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
