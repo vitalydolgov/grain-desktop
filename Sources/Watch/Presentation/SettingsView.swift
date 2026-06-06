@@ -3,10 +3,9 @@ import GrainDomain
 import GrainApplication
 
 struct SettingsView: View {
-    @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @State private var totalMinutes = 50
-    @State private var endWithB = true
+    @AppStorage("planTotalMinutes") private var totalMinutes = 50
+    @AppStorage("planEndWithB") private var endWithB = true
 
     private var configuration: PlanConfiguration {
         PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)
@@ -36,16 +35,10 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("Plan")
-        .task {
-            let config = await settings.plan.load()
-            totalMinutes = config.totalMinutes
-            endWithB = config.endWithB
-            selectFeasibleEndMode()
-            updatePlan()
-        }
-        .onChange(of: totalMinutes) { selectFeasibleEndMode(); save() }
-        .onChange(of: endWithB) { save() }
+        .navigationTitle("Timer")
+        .onAppear { selectFeasibleEndMode(); updatePlan() }
+        .onChange(of: totalMinutes) { selectFeasibleEndMode(); updatePlan() }
+        .onChange(of: endWithB) { updatePlan() }
     }
 
     private var canToggleEndMode: Bool {
@@ -64,11 +57,6 @@ struct SettingsView: View {
         if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
-    }
-
-    private func save() {
-        updatePlan()
-        Task { try? await settings.plan.save(configuration) }
     }
 }
 

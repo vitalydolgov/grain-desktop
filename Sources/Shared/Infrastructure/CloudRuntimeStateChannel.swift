@@ -12,7 +12,7 @@ struct CloudRuntimeStatePublisher: RuntimeStatePublisher {
 
     func publish(_ state: RuntimeState) {
         let store = NSUbiquitousKeyValueStore.default
-        if let data = try? JSONEncoder().encode(RuntimeStateEnvelope(state)) {
+        if let data = try? JSONEncoder().encode(state) {
             store.set(data, forKey: source.cloudKey)
         }
         store.synchronize()
@@ -37,13 +37,8 @@ struct CloudRuntimeStateSubscriber: RuntimeStateSubscriber {
         }
     }
 
-    private static let expiresAfter: TimeInterval = 10
-
     private static func read(key: String) -> RuntimeState? {
-        guard let data = NSUbiquitousKeyValueStore.default.data(forKey: key),
-              let envelope = try? JSONDecoder().decode(RuntimeStateEnvelope.self, from: data),
-              Date().timeIntervalSinceReferenceDate - envelope.publishedAt < expiresAfter
-        else { return nil }
-        return envelope.state
+        guard let data = NSUbiquitousKeyValueStore.default.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(RuntimeState.self, from: data)
     }
 }

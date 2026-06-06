@@ -5,7 +5,7 @@ Guidelines for adding new features or modifying existing code.
 ## Presentation
 
 - Extract non-trivial sub-views into their own private structs rather than computed `@ViewBuilder` properties or helper functions returning `some View` on the parent.
-- Group view properties by stability, most stable first: `let` constants → `@Binding` (caller-owned) → `@Environment` (injected) → `@State`/`@Bindable` (view-owned).
+- Order view properties by stability, most stable first: `let` constants → `@Binding` (caller-owned) → `@Environment` (injected) → `@AppStorage`/`@State`/`@Bindable` (view-owned).
 - Order within a view struct: properties → `init` → `body` → private helpers.
 - Business logic lives as private methods on the view; extract a view model only when the logic is substantial enough to warrant a separate type.
 

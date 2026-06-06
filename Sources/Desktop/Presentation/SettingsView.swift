@@ -14,6 +14,7 @@ struct SettingsView: View {
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
         .frame(width: 300, height: 300)
+        .background(KeepOnTopConfigurator())
         .task {
             displayPrefs = await settings.display.load()
         }

@@ -61,6 +61,14 @@ struct GrainDesktopApp: App {
         }
         .menuBarExtraStyle(.window)
 
+        Window("Floating Timer", id: "floating-timer") {
+            FloatingTimerView()
+                .environment(timerRuntime)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 220, height: 240)
+        .windowResizability(.contentSize)
+
         Settings {
             SettingsView()
                 .environment(timerRuntime)

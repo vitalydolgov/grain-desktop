@@ -71,8 +71,13 @@ private struct TimerActions: View {
 
 private struct TimerSettingsRow: View {
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
+        MenuRow("Keep on Top") {
+            NSApp.activate(ignoringOtherApps: true)
+            openWindow(id: "floating-timer")
+        }
         MenuRow("Settings") {
             NSApp.activate(ignoringOtherApps: true)
             openSettings()
