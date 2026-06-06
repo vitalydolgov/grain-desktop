@@ -30,11 +30,15 @@ targets:
     platform: macOS
     sources:
       - Sources/Desktop
-      - path: Sources/Shared
-        excludes:
-          - Resources/**
-      - path: Resources/Fonts
-        type: folder
+      - Sources/Shared
+    buildPhases:
+      - type: copyFiles
+        name: Copy Fonts
+        destination: resources
+        subpath: Fonts
+        files:
+          - Resources/Fonts/SUSEMono-VariableFont_wght.ttf
+          - Resources/Fonts/Urbanist-VariableFont_wght.ttf
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -63,9 +67,7 @@ targets:
     platform: watchOS
     sources:
       - Sources/Watch
-      - path: Sources/Shared
-        excludes:
-          - Resources/**
+      - Sources/Shared
       - path: Resources/Fonts/SUSEMono-VariableFont_wght.ttf
       - path: Resources/Fonts/Urbanist-VariableFont_wght.ttf
     dependencies:
