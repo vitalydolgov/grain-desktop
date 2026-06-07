@@ -43,10 +43,7 @@ extension Appearance {
     }
 
     var colorScheme: ColorScheme? {
-        switch self {
-        case .system: nil
-        case .light: .light
-        case .dark: .dark
-        }
+        guard self != .system else { return nil }
+        return self == .dark ? .dark : .light
     }
 }
