@@ -1,6 +1,6 @@
 # Project Grain
 
-A macOS menubar interval timer app with a watchOS companion. Alternates between two phases (A and B) on a repeating cycle; the watch runs its own independent timer and can optionally sync with a session running on the Mac.
+A macOS menubar interval timer app with watchOS and iOS companions. Alternates between two phases (A and B) on a repeating cycle; the watch and iPhone each run their own independent timer and can optionally sync with a session running on the Mac.
 
 **Stack:** Swift 6 · SwiftUI
 
@@ -10,6 +10,7 @@ A macOS menubar interval timer app with a watchOS companion. Alternates between 
 - **Configurable cycle length** — constant, growth, or decay mode controls whether phase durations stay equal or scale across cycles
 - **System notifications** on phase and session completion
 - **A companion watchOS app** with independent timer control and configurable phase durations; can optionally sync with a running Mac session
+- **A companion iOS app** with the same independent timer control and configurable phase durations; can optionally sync with a running Mac session
 
 ## Architecture
 
@@ -44,6 +45,7 @@ Cross-device state propagation is described separately under [Synchronization](#
 - **Presentation (desktop)** — macOS menubar UI; includes `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
 - **Settings** — a *bounded context* that owns configuration, display preferences, and session restore state
 - **Presentation (watch)** — watchOS UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control and `RuntimeSynchronizer` for optional Mac sync
+- **Presentation (iOS)** — iPhone UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control and `RuntimeSynchronizer` for optional Mac sync
 - **State transport** — iCloud publisher/subscriber channels (`NSUbiquitousKeyValueStore`) that carry runtime state between devices, with a local channel for debug and the simulator. One-way — no commands flow back. See [Synchronization](#synchronization)
 - **Application** and **Domain** — see the [Grain](https://github.com/vitalydolgov/grain) library
 
@@ -86,6 +88,8 @@ The desktop runs the relay over its runtime's **state** stream. The relay dedupe
 
 On the watch, `RuntimeSynchronizer` subscribes to the store and tracks a sync mode: `.none` when no session is active remotely, `.pending` when a running or paused session is detected (prompting "Sync with Mac?"), `.synced` after the user accepts, and `.declined` if they dismiss. Only on acceptance does the synchronizer restore state into the watch's own Grain runtime; from there, the runtime's **state** stream drives the Watch `RuntimeProxy` and UI — the same streaming contract as the desktop, populated remotely.
 
+The iOS app consumes the same relay through an identical `RuntimeSynchronizer`, so Mac → device sync works the same way on iPhone as on the watch.
+
 ## Building
 
 Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). Create `local.yml` in the project root for developer-specific settings such as `DEVELOPMENT_TEAM`.
@@ -96,7 +100,7 @@ xcodegen generate
 
 Re-run whenever you add, remove, or rename source files.
 
-The project generates two schemes, `GrainDesktop` (macOS) and `GrainWatch` (watchOS).
+The project generates three schemes, `GrainDesktop` (macOS), `GrainWatch` (watchOS), and `GrainPhone` (iOS).
 
 Build the desktop app:
 
@@ -108,4 +112,10 @@ Build the watch app:
 
 ```sh
 xcodebuild build -project GrainApp.xcodeproj -scheme GrainWatch -destination 'generic/platform=watchOS Simulator'
+```
+
+Build the iOS app:
+
+```sh
+xcodebuild build -project GrainApp.xcodeproj -scheme GrainPhone -destination 'generic/platform=iOS Simulator'
 ```
