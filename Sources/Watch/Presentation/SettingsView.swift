@@ -35,7 +35,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("Timer")
+        .navigationTitle("Plan")
         .onAppear { selectFeasibleEndMode(); updatePlan() }
         .onChange(of: totalMinutes) { selectFeasibleEndMode(); updatePlan() }
         .onChange(of: endWithB) { updatePlan() }
@@ -101,72 +101,14 @@ private struct SplitPlanner: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            SplitBar(intervals: plan.intervals, total: plan.totalDuration)
+            SplitBar(intervals: plan.intervals, total: plan.totalDuration,
+                     height: 14, segmentFontSize: 8)
             HStack(spacing: 8) {
-                PhaseKey(tag: .a)
-                PhaseKey(tag: .b)
+                PhaseKey(tag: .a, dotSize: 7)
+                PhaseKey(tag: .b, dotSize: 7)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 2)
-    }
-}
-
-private struct SplitBar: View {
-    let intervals: [Interval]
-    let total: Duration
-
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 1) {
-                ForEach(Array(intervals.enumerated()), id: \.offset) { _, interval in
-                    SplitSegment(interval: interval,
-                                 width: width(for: interval, in: geometry.size.width))
-                }
-            }
-        }
-        .frame(height: 14)
-        .clipShape(RoundedRectangle(cornerRadius: 3))
-    }
-
-    private func width(for interval: Interval, in available: CGFloat) -> CGFloat {
-        guard total.millis > 0 else { return 0 }
-        let usable = available - CGFloat(max(0, intervals.count - 1))
-        return usable * CGFloat(interval.duration.millis) / CGFloat(total.millis)
-    }
-}
-
-private struct SplitSegment: View {
-    let interval: Interval
-    let width: CGFloat
-
-    var body: some View {
-        Text("\(minutes)")
-            .font(.system(size: 8, weight: .semibold))
-            .foregroundStyle(.white)
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            .frame(width: width)
-            .frame(maxHeight: .infinity)
-            .background(interval.tag.color)
-    }
-
-    private var minutes: Int {
-        Int((Double(interval.duration.millis) / 60_000).rounded())
-    }
-}
-
-private struct PhaseKey: View {
-    let tag: IntervalTag
-
-    var body: some View {
-        HStack(spacing: 3) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(tag.color)
-                .frame(width: 7, height: 7)
-            Text(tag.label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
     }
 }

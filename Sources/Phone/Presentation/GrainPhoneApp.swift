@@ -4,21 +4,12 @@ import GrainApplication
 
 @main
 struct GrainPhoneApp: App {
-    @State private var timerRuntime: RuntimeProxy
-    @State private var synchronizer: RuntimeSynchronizer
-
-    init() {
-        let timerRuntime = RuntimeProxy(runtime: TimerRuntime())
-        let synchronizer = RuntimeSynchronizer(delegate: timerRuntime)
-        _timerRuntime = State(wrappedValue: timerRuntime)
-        _synchronizer = State(wrappedValue: synchronizer)
-    }
+    @State private var timerRuntime = RuntimeProxy()
 
     var body: some Scene {
         WindowGroup {
             TimerView()
                 .environment(timerRuntime)
-                .environment(synchronizer)
                 .preferredColorScheme(.dark)
                 .task {
                     for await signal in timerRuntime.signals() {
@@ -33,9 +24,8 @@ struct GrainPhoneApp: App {
                     }
                 }
                 .task {
-                    for await status in timerRuntime.statuses {
-                        synchronizer.status = status
-                    }
+                    let relay = RuntimeStateRelay(publisher: RuntimeStateSync.publisher(as: .phone))
+                    await relay.transmit(states: await timerRuntime.runtimeStates())
                 }
         }
     }

@@ -4,9 +4,7 @@ import GrainApplication
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(RuntimeSynchronizer.self) private var synchronizer
     @State private var showingSettings = false
-    @State private var showingRemoteSyncPrompt = false
     @State private var liveActivity = LiveActivityController()
 
     var body: some View {
@@ -27,17 +25,9 @@ struct TimerView: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
-                Group {
-                    if case .synced = synchronizer.syncMode {
-                        Image(systemName: "personalhotspot")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(.white.opacity(0.6))
-                    } else {
-                        CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
-                            .foregroundStyle(.white)
-                    }
-                }
-                .padding(.top, 16)
+                CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
+                    .foregroundStyle(.white)
+                    .padding(.top, 16)
             }
             .padding(.horizontal, 40)
         }
@@ -46,15 +36,6 @@ struct TimerView: View {
             NavigationStack {
                 SettingsView()
             }
-        }
-        .alert("Sync with Mac?", isPresented: $showingRemoteSyncPrompt) {
-            Button("Sync") { synchronizer.acceptSync() }
-            Button("Not Now", role: .cancel) { synchronizer.declineSync() }
-        } message: {
-            Text("A session is running on your Mac.")
-        }
-        .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
-            showingRemoteSyncPrompt = isPending
         }
         .onChange(of: timerRuntime.status) { syncLiveActivity() }
         .onChange(of: timerRuntime.currentIndex.index) { syncLiveActivity() }
@@ -93,10 +74,6 @@ struct TimerView: View {
     private var phaseColor: Color {
         currentTag?.color ?? Color(white: 0.3)
     }
-}
-
-private extension SyncMode {
-    var isPending: Bool { if case .pending = self { true } else { false } }
 }
 
 private struct ProgressRing: View {

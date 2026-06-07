@@ -4,9 +4,9 @@ import GrainApplication
 
 enum SyncMode: Sendable {
     case none
-    case pending(RuntimeState)
-    case declined
-    case synced
+    case pending(RuntimeStateSync.Source, RuntimeState)
+    case declined(RuntimeStateSync.Source)
+    case synced(RuntimeStateSync.Source)
 }
 
 @MainActor
@@ -28,37 +28,50 @@ final class RuntimeSynchronizer {
         Task { [weak self] in await self?.beginSyncMonitoring() }
     }
 
+    var pendingSource: RuntimeStateSync.Source? {
+        if case .pending(let source, _) = syncMode { source } else { nil }
+    }
+
     private func beginSyncMonitoring() async {
-        let subscriber = RuntimeStateSync.wearableSubscriber(following: .desktop)
-        for await remoteState in subscriber.states {
-            switch remoteState.timer.status {
-            case .idle, .completed:
-                if case .synced = syncMode { reset() }
-                syncMode = .none
-            case .running, .paused:
-                switch syncMode {
-                case .synced:
-                    restore(from: remoteState)
-                case .none:
-                    if status == .idle || status == .completed {
-                        syncMode = .pending(remoteState)
+        await withTaskGroup(of: Void.self) { group in
+            for source in RuntimeStateSync.Source.allCases {
+                let subscriber = RuntimeStateSync.wearableSubscriber(following: source)
+                group.addTask { [weak self] in
+                    for await state in subscriber.states {
+                        await self?.handle(state, from: source)
                     }
-                case .pending, .declined:
-                    break
                 }
             }
         }
     }
 
+    private func handle(_ remoteState: RuntimeState, from source: RuntimeStateSync.Source) {
+        let isActive = remoteState.timer.status == .running || remoteState.timer.status == .paused
+        switch syncMode {
+        case .synced(let s) where s == source:
+            if isActive { restore(from: remoteState) } else { reset(); syncMode = .none }
+        case .pending(let s, _) where s == source:
+            syncMode = isActive ? .pending(source, remoteState) : .none
+        case .declined(let s) where s == source:
+            if !isActive { syncMode = .none }
+        case .none:
+            if isActive, status == .idle || status == .completed {
+                syncMode = .pending(source, remoteState)
+            }
+        default:
+            break // engaged with a different source; ignore until it goes idle
+        }
+    }
+
     func acceptSync() {
-        guard case .pending(let state) = syncMode else { return }
-        syncMode = .synced
+        guard case .pending(let source, let state) = syncMode else { return }
+        syncMode = .synced(source)
         restore(from: state)
     }
 
     func declineSync() {
-        guard case .pending = syncMode else { return }
-        syncMode = .declined
+        guard case .pending(let source, _) = syncMode else { return }
+        syncMode = .declined(source)
     }
 
     private func restore(from state: RuntimeState) {
