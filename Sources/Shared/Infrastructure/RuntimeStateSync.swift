@@ -2,8 +2,9 @@ import Foundation
 import GrainApplication
 
 enum RuntimeStateSync {
-    enum Source: String {
+    enum Source: String, CaseIterable, Sendable {
         case desktop
+        case phone
     }
 
     static func publisher(as source: Source) -> any RuntimeStatePublisher {

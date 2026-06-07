@@ -46,3 +46,14 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             -skipMacroValidation \
             | xcbeautify --quiet
+
+      - name: Build watchOS app
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GrainApp.xcodeproj \
+            -scheme GrainWatch \
+            -destination "generic/platform=watchOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            -skipMacroValidation \
+            | xcbeautify --quiet

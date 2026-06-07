@@ -44,15 +44,31 @@ struct TimerView: View {
                 SettingsView()
             }
         }
-        .alert("Sync with Mac?", isPresented: $showingRemoteSyncPrompt) {
+        .alert(syncPromptTitle, isPresented: $showingRemoteSyncPrompt) {
             Button("Sync") { synchronizer.acceptSync() }
             Button("Not Now", role: .cancel) { synchronizer.declineSync() }
         } message: {
-            Text("A session is running on your Mac.")
+            Text(syncPromptMessage)
         }
         .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
             showingRemoteSyncPrompt = isPending
         }
+    }
+
+    private var syncSourceName: String {
+        switch synchronizer.pendingSource {
+        case .desktop?: "Mac"
+        case .phone?: "iPhone"
+        case nil: "device"
+        }
+    }
+
+    private var syncPromptTitle: String {
+        "Sync with \(syncSourceName)?"
+    }
+
+    private var syncPromptMessage: String {
+        "A session is running on your \(syncSourceName)."
     }
 
     private var currentTag: IntervalTag? {
