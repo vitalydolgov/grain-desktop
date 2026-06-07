@@ -9,14 +9,16 @@ A macOS menubar interval timer app with watchOS and iOS companions. Alternates b
 - **Session persistence** — quitting the app or restarting the machine doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
 - **Configurable cycle length** — constant, growth, or decay mode controls whether phase durations stay equal or scale across cycles
 - **System notifications** on phase and session completion
-- **A companion watchOS app** with independent timer control and configurable phase durations; can optionally sync with a running Mac session
-- **A companion iOS app** with independent timer control and configurable phase durations
 
 ## Architecture
 
-The app follows Domain-Driven Design with three layers, plus a **Settings** bounded context. Dependencies point inward.
+The project builds three targets, each its own Xcode scheme (see [Building](#building)):
 
-The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a dependency. **Presentation** and **Settings** live in this repository.
+- **Desktop** (macOS) — two faces over one runtime: a *menubar* popover for quick control and a detachable, always-on-top *floating window*
+- **Watch** (watchOS) — a standalone timer that can optionally sync with a running Mac session
+- **Phone** (iOS) — a standalone timer
+
+All follow Domain-Driven Design with three layers, plus a **Settings** bounded context; dependencies point inward. The inner two layers — **Application** and **Domain** — live in the [Grain](https://github.com/vitalydolgov/grain) library, consumed as a dependency. **Presentation** and **Settings** live in this repository.
 
 ```mermaid
 flowchart TD
@@ -42,7 +44,7 @@ Cross-device state propagation is described separately under [Synchronization](#
 
 ### Composition
 
-- **Presentation (desktop)** — macOS menubar UI; includes `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
+- **Presentation (desktop)** — macOS menubar and floating-window UI; includes `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
 - **Settings** — a *bounded context* that owns configuration, display preferences, and session restore state
 - **Presentation (watch)** — watchOS UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control and `RuntimeSynchronizer` for optional Mac sync
 - **Presentation (iOS)** — iPhone UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control (a standalone timer, no cross-device sync)
@@ -96,9 +98,7 @@ Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com
 xcodegen generate
 ```
 
-Re-run whenever you add, remove, or rename source files.
-
-The project generates three schemes, `Desktop` (macOS), `Watch` (watchOS), and `Phone` (iOS).
+Re-run whenever you add, remove, or rename source files. This produces a scheme per target — `Desktop`, `Watch`, and `Phone`.
 
 Build the desktop app:
 
