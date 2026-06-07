@@ -9,8 +9,9 @@ struct SettingsAppearanceTab: View {
         Form {
             Section {
                 Picker("Menu bar", selection: $menuBarFormat) {
-                    Text("Time").tag(MenuBarLabelFormat.time)
-                    Text("Icon").tag(MenuBarLabelFormat.icon)
+                    ForEach(MenuBarLabelFormat.allCases, id: \.self) { option in
+                        Text(option.label).tag(option)
+                    }
                 }
                 Picker("Theme", selection: $appearance) {
                     ForEach(Appearance.allCases, id: \.self) { option in
@@ -20,6 +21,15 @@ struct SettingsAppearanceTab: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+extension MenuBarLabelFormat {
+    var label: String {
+        switch self {
+        case .time: "Time"
+        case .icon: "Icon"
+        }
     }
 }
 
