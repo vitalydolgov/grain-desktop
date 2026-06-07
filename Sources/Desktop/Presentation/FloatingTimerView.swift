@@ -34,6 +34,7 @@ struct GlassFloatingTimerView: View {
 private struct TimerContent: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(spacing: 12) {
@@ -41,7 +42,7 @@ private struct TimerContent: View {
                 count: timerRuntime.plan.intervals.count,
                 currentIndex: timerRuntime.currentIndex.index,
                 color: phaseColor,
-                inactiveColor: .white.opacity(0.25)
+                inactiveColor: inactiveDotColor
             )
             .opacity(timerRuntime.status == .idle ? 0 : 1)
             Text(format(timerRuntime.remainingTime))
@@ -56,6 +57,10 @@ private struct TimerContent: View {
         let intervals = timerRuntime.plan.intervals
         guard idx.index < intervals.count else { return Color(white: 0.3) }
         return intervals[idx.index].tag.color
+    }
+
+    private var inactiveDotColor: Color {
+        (colorScheme == .dark ? Color.white : Color.black).opacity(0.25)
     }
 
     private func format(_ duration: Duration) -> String {
