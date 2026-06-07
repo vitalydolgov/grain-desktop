@@ -14,9 +14,9 @@ A macOS menubar interval timer app with watchOS and iOS companions. Alternates b
 
 Three apps over the shared [Grain](https://github.com/vitalydolgov/grain) runtime, each its own Xcode scheme:
 
-- **Desktop** (macOS · `Desktop`) — two faces over one runtime: a *menubar* popover for quick control and a detachable, always-on-top *floating window*
-- **Watch** (watchOS · `Watch`) — standalone timer; can optionally sync with a running Mac session
-- **Phone** (iOS · `Phone`) — standalone timer
+- **Desktop** (macOS 14.0) — two faces over one runtime: a *menubar* popover for quick control and a detachable, always-on-top *floating window*
+- **Watch** (watchOS 10.0) — standalone timer; can optionally sync with a running Mac session
+- **Phone** (iOS 17.0) — standalone timer
 
 ## Architecture
 
