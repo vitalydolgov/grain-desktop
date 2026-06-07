@@ -23,7 +23,8 @@ struct GrainWatchApp: App {
                 .environment(synchronizer)
                 .environment(settings)
                 .task {
-                    if let plan = (await settings.plan.load()).makePlan() {
+                    let configuration = await settings.plan.load()
+                    if let plan = configuration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
                 }
