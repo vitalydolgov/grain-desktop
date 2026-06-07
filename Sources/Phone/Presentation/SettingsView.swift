@@ -37,7 +37,7 @@ struct SettingsView: View {
         }
         .task {
             let loaded = await settings.plan.load()
-            let configuration = selectFeasibleEndMode(for: loaded)
+            let configuration = getFeasibleConfiguration(for: loaded)
             if let plan = configuration.makePlan() {
                 timerRuntime.setPlan(plan)
             }
@@ -45,7 +45,7 @@ struct SettingsView: View {
             endWithB = configuration.endWithB
         }
         .onChange(of: totalMinutes) {
-            let configuration = selectFeasibleEndMode(for: PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB))
+            let configuration = getFeasibleConfiguration(for: PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB))
             endWithB = configuration.endWithB
             save(configuration)
         }
@@ -59,7 +59,7 @@ struct SettingsView: View {
             && PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false)
     }
 
-    private func selectFeasibleEndMode(for configuration: PlanConfiguration) -> PlanConfiguration {
+    private func getFeasibleConfiguration(for configuration: PlanConfiguration) -> PlanConfiguration {
         if configuration.canPlan(endWithB: true) {
             return PlanConfiguration(totalMinutes: configuration.totalMinutes, endWithB: true)
         } else if configuration.canPlan(endWithB: false) {
