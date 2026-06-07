@@ -12,7 +12,7 @@ struct TimerView: View {
         ZStack {
             Color.black
                 .ignoresSafeArea()
-            ProgressRing(fraction: phaseRemainingFraction, color: phaseColor)
+            ProgressRing(fraction: phaseRemainingFraction, color: phaseColor, isLit: timerRuntime.status != .idle)
                 .padding(-6)
             VStack(spacing: 2) {
                 Text((currentTag ?? .a).label)
@@ -87,8 +87,17 @@ private extension SyncMode {
 }
 
 private struct ProgressRing: View {
+    // Equal length: the keyframe builder forbids control flow, so the track emits a fixed eight keyframes.
+    private static let fourBlinkValues: [Double] = [0.0, 0.9, 0.0, 0.55, 0.05, 1.0, 0.3, 1.0]
+    private static let threeBlinkValues: [Double] = [0.0, 0.9, 0.0, 0.55, 0.05, 0.5, 0.75, 1.0]
+    private static let baseDurations: [Double] = [0.08, 0.05, 0.065, 0.05, 0.09, 0.05, 0.065, 0.235]
+
     let fraction: Double
     let color: Color
+    let isLit: Bool
+    @State private var ignition = 0
+    @State private var values = ProgressRing.fourBlinkValues
+    @State private var durations = ProgressRing.baseDurations
 
     var body: some View {
         ZStack {
@@ -97,10 +106,33 @@ private struct ProgressRing: View {
             Circle()
                 .trim(from: 0, to: max(0, min(1, fraction)))
                 .stroke(color, style: StrokeStyle(lineWidth: 9, lineCap: .round))
-                .shadow(color: color.opacity(0.7), radius: 6)
-                .shadow(color: color.opacity(0.45), radius: 13)
-                .shadow(color: color.opacity(0.25), radius: 20)
                 .rotationEffect(.degrees(-90))
+                .keyframeAnimator(initialValue: 0.0, trigger: ignition) { content, glow in
+                    let g = isLit ? glow : 0
+                    content
+                        .opacity(g)
+                        .shadow(color: color.opacity(0.7 * g), radius: 6)
+                        .shadow(color: color.opacity(0.45 * g), radius: 13)
+                        .shadow(color: color.opacity(0.25 * g), radius: 20)
+                } keyframes: { _ in
+                    KeyframeTrack(\.self) {
+                        LinearKeyframe(values[0], duration: durations[0])
+                        LinearKeyframe(values[1], duration: durations[1])
+                        LinearKeyframe(values[2], duration: durations[2])
+                        LinearKeyframe(values[3], duration: durations[3])
+                        LinearKeyframe(values[4], duration: durations[4])
+                        LinearKeyframe(values[5], duration: durations[5])
+                        LinearKeyframe(values[6], duration: durations[6])
+                        CubicKeyframe(values[7], duration: durations[7])
+                    }
+                }
+        }
+        .onChange(of: isLit) { _, lit in
+            if lit {
+                values = Bool.random() ? Self.fourBlinkValues : Self.threeBlinkValues
+                durations = Self.baseDurations.map { $0 * Double.random(in: 0.5...1.5) }
+                ignition += 1
+            }
         }
     }
 }
