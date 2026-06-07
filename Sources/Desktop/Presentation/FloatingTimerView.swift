@@ -72,7 +72,7 @@ private struct IntervalDots: View {
         HStack(spacing: 7) {
             ForEach(0..<total, id: \.self) { i in
                 Circle()
-                    .fill(i <= currentIndex ? color : Color.white.opacity(0.25))
+                    .fill(i == currentIndex ? color : Color.white.opacity(0.25))
                     .frame(
                         width: i == currentIndex ? 8 : 6,
                         height: i == currentIndex ? 8 : 6
