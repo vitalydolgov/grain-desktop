@@ -60,7 +60,13 @@ private struct PlanSummary: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            SplitBar(intervals: plan.intervals, total: plan.totalDuration)
+            VStack(spacing: 6) {
+                SplitBar(intervals: plan.intervals)
+                    .font(.system(size: 10))
+                    .frame(height: 20)
+                SplitBarLegend()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             HStack {
                 TimelineView(.periodic(from: .now, by: 60)) { context in
                     Text("Ends at \(estimatedEndText(from: context.date))")
@@ -77,72 +83,6 @@ private struct PlanSummary: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: end)
-    }
-}
-
-private struct SplitBar: View {
-    let intervals: [Interval]
-    let total: Duration
-
-    var body: some View {
-        VStack(spacing: 6) {
-            GeometryReader { geometry in
-                HStack(spacing: 1) {
-                    ForEach(Array(intervals.enumerated()), id: \.offset) { _, interval in
-                        SplitSegment(interval: interval,
-                                     width: width(for: interval, in: geometry.size.width))
-                    }
-                }
-            }
-            .frame(height: 20)
-            .clipShape(RoundedRectangle(cornerRadius: 3))
-            HStack(spacing: 12) {
-                PhaseKey(tag: .a)
-                PhaseKey(tag: .b)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private func width(for interval: Interval, in available: CGFloat) -> CGFloat {
-        guard total.millis > 0 else { return 0 }
-        let usable = available - CGFloat(max(0, intervals.count - 1))
-        return usable * CGFloat(interval.duration.millis) / CGFloat(total.millis)
-    }
-}
-
-private struct SplitSegment: View {
-    let interval: Interval
-    let width: CGFloat
-
-    var body: some View {
-        Text("\(minutes)")
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(.white)
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            .frame(width: width)
-            .frame(maxHeight: .infinity)
-            .background(interval.tag.color)
-    }
-
-    private var minutes: Int {
-        Int((Double(interval.duration.millis) / 60_000).rounded())
-    }
-}
-
-private struct PhaseKey: View {
-    let tag: IntervalTag
-
-    var body: some View {
-        HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(tag.color)
-                .frame(width: 9, height: 9)
-            Text(tag.label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
     }
 }
 

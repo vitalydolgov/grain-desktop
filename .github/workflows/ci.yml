@@ -21,13 +21,35 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Build
+      - name: Build macOS app
         run: |
           set -o pipefail
           xcodebuild build \
-            -project GrainDesktop.xcodeproj \
+            -project GrainApp.xcodeproj \
             -scheme GrainDesktop \
             -destination "generic/platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            -skipMacroValidation \
+            | xcbeautify --quiet
+
+      - name: Build iOS app
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GrainApp.xcodeproj \
+            -scheme GrainPhone \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            -skipMacroValidation \
+            | xcbeautify --quiet
+
+      - name: Build watchOS app
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GrainApp.xcodeproj \
+            -scheme GrainWatch \
+            -destination "generic/platform=watchOS Simulator" \
             CODE_SIGNING_ALLOWED=NO \
             -skipMacroValidation \
             | xcbeautify --quiet

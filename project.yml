@@ -9,6 +9,7 @@ options:
   deploymentTarget:
     macOS: "14.0"
     watchOS: "10.0"
+    iOS: "17.0"
   createIntermediateGroups: true
 
 settings:
@@ -25,7 +26,7 @@ packages:
     revision: 5df9105
 
 targets:
-  GrainDesktop:
+  Desktop:
     type: application
     platform: macOS
     sources:
@@ -59,7 +60,7 @@ targets:
       properties:
         com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
 
-  GrainWatch:
+  Watch:
     type: application
     platform: watchOS
     sources:
@@ -96,3 +97,37 @@ targets:
         com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
         com.apple.developer.watchkit.background-modes:
           - self-care
+
+  Phone:
+    type: application
+    platform: iOS
+    sources:
+      - Sources/Phone
+      - path: Sources/Shared
+        excludes:
+          - "**/*.txt"
+    dependencies:
+      - package: Grain
+        product: GrainDomain
+      - package: Grain
+        product: GrainApplication
+    settings:
+      base:
+        PRODUCT_NAME: Grain
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.Grain
+        SWIFT_VERSION: "6"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: Sources/Phone/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIAppFonts:
+          - Urbanist-VariableFont_wght.ttf
+          - SUSEMono-VariableFont_wght.ttf
+        CFBundleDisplayName: Grain
+    entitlements:
+      path: Sources/Phone/GrainPhone.entitlements
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
