@@ -40,7 +40,6 @@ struct SettingsView: View {
                 saveConfiguration(configuration)
             } else if let alternative = feasibleAlternative(for: configuration) {
                 configuration = alternative
-                saveConfiguration(alternative)
             }
         }
     }
