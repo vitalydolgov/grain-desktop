@@ -37,12 +37,15 @@ struct SettingsView: View {
             let config = await settings.plan.load()
             totalMinutes = config.totalMinutes
             endWithB = config.endWithB
-            selectFeasibleEndMode()
+            selectFeasibleEndMode(for: config)
             if let plan = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).makePlan() {
                 timerRuntime.setPlan(plan)
             }
         }
-        .onChange(of: totalMinutes) { selectFeasibleEndMode(); save() }
+        .onChange(of: totalMinutes) {
+            selectFeasibleEndMode(for: PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB))
+            save()
+        }
         .onChange(of: endWithB) { save() }
     }
 
@@ -51,10 +54,10 @@ struct SettingsView: View {
             && PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false)
     }
 
-    private func selectFeasibleEndMode() {
-        if PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: true) {
+    private func selectFeasibleEndMode(for configuration: PlanConfiguration) {
+        if configuration.canPlan(endWithB: true) {
             endWithB = true
-        } else if PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false) {
+        } else if configuration.canPlan(endWithB: false) {
             endWithB = false
         }
     }
