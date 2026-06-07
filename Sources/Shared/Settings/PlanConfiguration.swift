@@ -17,6 +17,11 @@ extension PlanConfiguration {
         SessionPlanner().canPlan(for: total, endWithB: endWithB, ramp: .falling)
     }
 
+    /// Whether this configuration's end mode can be planned for its total.
+    var isFeasible: Bool {
+        canPlan(endWithB: endWithB)
+    }
+
     /// Builds the session plan for this configuration, or nil when the total can't be split.
     func makePlan() -> SessionPlan? {
         try? SessionPlanner().plan(for: total, endWithB: endWithB, ramp: .falling)

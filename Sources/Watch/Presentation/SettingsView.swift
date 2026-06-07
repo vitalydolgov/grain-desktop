@@ -36,12 +36,11 @@ struct SettingsView: View {
             configuration = settings.configuration
         }
         .onChange(of: configuration) {
-            let feasible = getFeasibleConfiguration(for: configuration)
-            guard feasible == configuration else {
-                configuration = feasible
+            guard configuration.isFeasible else {
+                configuration = getFeasibleConfiguration(for: configuration)
                 return
             }
-            apply()
+            saveConfiguration()
         }
     }
 
@@ -58,7 +57,7 @@ struct SettingsView: View {
         return configuration
     }
 
-    private func apply() {
+    private func saveConfiguration() {
         guard configuration != settings.configuration else { return }
         if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
