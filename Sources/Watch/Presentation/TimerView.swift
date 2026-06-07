@@ -5,7 +5,6 @@ import GrainApplication
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(RuntimeSynchronizer.self) private var synchronizer
-    @State private var showingSettings = false
     @State private var showingRemoteSyncPrompt = false
 
     var body: some View {
@@ -30,7 +29,7 @@ struct TimerView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundStyle(.white.opacity(0.6))
                     } else {
-                        CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
+                        CompactControlPanel(status: timerRuntime.status)
                             .foregroundStyle(.white)
                     }
                 }
@@ -39,11 +38,6 @@ struct TimerView: View {
             .padding(.horizontal, 28)
         }
         .animation(.linear(duration: 0.3), value: phaseRemainingFraction)
-        .sheet(isPresented: $showingSettings) {
-            NavigationStack {
-                SettingsView()
-            }
-        }
         .alert("Sync with Mac?", isPresented: $showingRemoteSyncPrompt) {
             Button("Sync") { synchronizer.acceptSync() }
             Button("Not Now", role: .cancel) { synchronizer.declineSync() }

@@ -33,7 +33,6 @@ struct GlassFloatingTimerView: View {
 
 private struct TimerContent: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @Environment(\.openSettings) private var openSettings
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -48,7 +47,7 @@ private struct TimerContent: View {
             Text(format(timerRuntime.remainingTime))
                 .font(.customMonospaced(size: 60))
                 .animation(.snappy, value: timerRuntime.remainingTime)
-            CompactControlPanel(status: timerRuntime.status) { openSettings() }
+            CompactControlPanel(status: timerRuntime.status)
         }
     }
 

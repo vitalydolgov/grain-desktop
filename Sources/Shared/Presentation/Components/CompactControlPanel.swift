@@ -3,7 +3,6 @@ import GrainDomain
 
 struct CompactControlPanel: View {
     let status: SessionStatus
-    let onSettings: () -> Void
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
@@ -13,9 +12,9 @@ struct CompactControlPanel: View {
                     .font(.system(size: 18, weight: .bold))
                     .frame(width: 24)
             }
-            if isStopped {
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape.fill")
+            if status == .running {
+                Button { timerRuntime.skip() } label: {
+                    Image(systemName: "forward.fill")
                         .font(.system(size: 16, weight: .bold))
                 }
             } else {
@@ -26,10 +25,6 @@ struct CompactControlPanel: View {
             }
         }
         .buttonStyle(.plain)
-    }
-
-    private var isStopped: Bool {
-        status == .idle || status == .completed
     }
 
     private func togglePlayback() {
