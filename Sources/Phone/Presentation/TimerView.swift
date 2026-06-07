@@ -5,8 +5,8 @@ import GrainApplication
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(\.colorScheme) private var colorScheme
-    @AppStorage("planTotalMinutes") private var totalMinutes = 60
-    @AppStorage("planEndWithB") private var endWithB = true
+    @AppStorage("planTotalMinutes") private var totalMinutes = PlanConfiguration.default.totalMinutes
+    @AppStorage("planEndWithB") private var endWithB = PlanConfiguration.default.endWithB
     @State private var showingSettings = false
 
     var body: some View {

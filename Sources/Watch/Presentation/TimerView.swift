@@ -5,8 +5,8 @@ import GrainApplication
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(RuntimeSynchronizer.self) private var synchronizer
-    @AppStorage("planTotalMinutes") private var totalMinutes = 60
-    @AppStorage("planEndWithB") private var endWithB = true
+    @AppStorage("planTotalMinutes") private var totalMinutes = PlanConfiguration.default.totalMinutes
+    @AppStorage("planEndWithB") private var endWithB = PlanConfiguration.default.endWithB
     @State private var showingSettings = false
     @State private var showingRemoteSyncPrompt = false
 

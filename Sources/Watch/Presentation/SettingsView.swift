@@ -4,8 +4,8 @@ import GrainApplication
 
 struct SettingsView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @AppStorage("planTotalMinutes") private var totalMinutes = 60
-    @AppStorage("planEndWithB") private var endWithB = true
+    @AppStorage("planTotalMinutes") private var totalMinutes = PlanConfiguration.default.totalMinutes
+    @AppStorage("planEndWithB") private var endWithB = PlanConfiguration.default.endWithB
 
     private var configuration: PlanConfiguration {
         PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)

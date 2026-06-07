@@ -6,7 +6,7 @@ struct PlanConfiguration: Codable, Sendable, Equatable {
     var totalMinutes: Int
     var endWithB: Bool
 
-    static let `default` = PlanConfiguration(totalMinutes: 50, endWithB: true)
+    static let `default` = PlanConfiguration(totalMinutes: 60, endWithB: true)
 }
 
 extension PlanConfiguration {
