@@ -5,6 +5,11 @@ struct SettingsAppearanceTab: View {
     @Binding var menuBarFormat: MenuBarLabelFormat
     @Binding var appearance: Appearance
 
+    init(preferences: Binding<DisplayPreferences>) {
+        _menuBarFormat = preferences.menuBarLabelFormat
+        _appearance = preferences.appearance
+    }
+
     var body: some View {
         Form {
             Section {

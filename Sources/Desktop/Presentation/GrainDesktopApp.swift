@@ -71,6 +71,7 @@ struct GrainDesktopApp: App {
                 }
             }
             .environment(timerRuntime)
+            .preferredColorScheme(settings.preferences.appearance.colorScheme)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)

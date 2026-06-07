@@ -10,10 +10,7 @@ struct SettingsView: View {
             SettingsPlanTab()
                 .tabItem { Label("Plan", systemImage: "timer") }
 
-            SettingsAppearanceTab(
-                menuBarFormat: $settings.preferences.menuBarLabelFormat,
-                appearance: $settings.preferences.appearance
-            )
+            SettingsAppearanceTab(preferences: $settings.preferences)
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
         .frame(width: 300, height: 300)
