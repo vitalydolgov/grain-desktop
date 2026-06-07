@@ -13,8 +13,8 @@ struct GrainPhoneApp: App {
                 .environment(timerRuntime)
                 .environment(settings)
                 .task {
-                    let configuration = await settings.plan.load()
-                    if let plan = configuration.makePlan() {
+                    await settings.load()
+                    if let plan = settings.configuration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
                 }

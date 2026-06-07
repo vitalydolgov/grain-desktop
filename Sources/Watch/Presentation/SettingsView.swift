@@ -5,56 +5,42 @@ import GrainApplication
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @State private var totalMinutes = PlanConfiguration.default.totalMinutes
-    @State private var endWithB = PlanConfiguration.default.endWithB
 
     var body: some View {
+        @Bindable var settings = settings
         List {
             Section {
                 NavigationLink {
                     ValuePicker(title: "Total",
                                 values: Array(stride(from: 40, through: 240, by: 5)),
                                 unit: "min",
-                                amount: $totalMinutes)
+                                amount: $settings.configuration.totalMinutes)
                 } label: {
-                    SettingRow(title: "Total", value: "\(totalMinutes) min")
+                    SettingRow(title: "Total", value: "\(settings.configuration.totalMinutes) min")
                 }
                 if canToggleEndMode {
                     Toggle("Skip final break", isOn: Binding(
-                        get: { !endWithB },
-                        set: { endWithB = !$0 }
+                        get: { !settings.configuration.endWithB },
+                        set: { settings.configuration.endWithB = !$0 }
                     ))
                 }
             }
             Section {
-                if let plan = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).makePlan() {
+                if let plan = settings.configuration.makePlan() {
                     SplitPlanner(plan: plan)
                 }
             }
         }
         .navigationTitle("Plan")
-        .task {
-            let loaded = await settings.plan.load()
-            let configuration = getFeasibleConfiguration(for: loaded)
-            if let plan = configuration.makePlan() {
-                timerRuntime.setPlan(plan)
-            }
-            totalMinutes = configuration.totalMinutes
-            endWithB = configuration.endWithB
+        .onChange(of: settings.configuration.totalMinutes) {
+            settings.configuration = getFeasibleConfiguration(for: settings.configuration)
+            apply()
         }
-        .onChange(of: totalMinutes) {
-            let configuration = getFeasibleConfiguration(for: PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB))
-            endWithB = configuration.endWithB
-            save(configuration)
-        }
-        .onChange(of: endWithB) {
-            save(PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB))
-        }
+        .onChange(of: settings.configuration.endWithB) { apply() }
     }
 
     private var canToggleEndMode: Bool {
-        PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: true)
-            && PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false)
+        settings.configuration.canPlan(endWithB: true) && settings.configuration.canPlan(endWithB: false)
     }
 
     private func getFeasibleConfiguration(for configuration: PlanConfiguration) -> PlanConfiguration {
@@ -66,11 +52,11 @@ struct SettingsView: View {
         return configuration
     }
 
-    private func save(_ configuration: PlanConfiguration) {
-        if let plan = configuration.makePlan() {
+    private func apply() {
+        if let plan = settings.configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
-        Task { try? await settings.plan.save(configuration) }
+        Task { await settings.save() }
     }
 }
 
