@@ -7,6 +7,7 @@ struct TimerView: View {
     @Environment(RuntimeSynchronizer.self) private var synchronizer
     @State private var showingSettings = false
     @State private var showingRemoteSyncPrompt = false
+    @State private var liveActivity = LiveActivityController()
 
     var body: some View {
         ZStack {
@@ -55,6 +56,16 @@ struct TimerView: View {
         .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
             showingRemoteSyncPrompt = isPending
         }
+        .onChange(of: timerRuntime.status) { syncLiveActivity() }
+        .onChange(of: timerRuntime.currentIndex.index) { syncLiveActivity() }
+    }
+
+    private func syncLiveActivity() {
+        liveActivity.sync(
+            status: timerRuntime.status,
+            phaseLabel: (currentTag ?? .a).label,
+            remainingTime: timerRuntime.remainingTime
+        )
     }
 
     private var currentTag: IntervalTag? {

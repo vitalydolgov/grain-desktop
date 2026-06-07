@@ -103,6 +103,7 @@ targets:
     platform: iOS
     sources:
       - Sources/Phone
+      - path: Sources/PhoneWidget/GrainActivityAttributes.swift
       - path: Sources/Shared
         excludes:
           - "**/*.txt"
@@ -111,6 +112,7 @@ targets:
         product: GrainDomain
       - package: Grain
         product: GrainApplication
+      - target: GrainPhoneWidget
     settings:
       base:
         PRODUCT_NAME: Grain
@@ -127,7 +129,27 @@ targets:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf
         CFBundleDisplayName: Grain
+        NSSupportsLiveActivities: true
     entitlements:
       path: Sources/Phone/GrainPhone.entitlements
       properties:
         com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
+
+  GrainPhoneWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Sources/PhoneWidget
+    settings:
+      base:
+        PRODUCT_NAME: GrainPhoneWidget
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.Grain.PhoneWidget
+        SWIFT_VERSION: "6"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Sources/PhoneWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Grain
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
