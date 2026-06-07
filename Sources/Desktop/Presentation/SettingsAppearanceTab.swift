@@ -13,9 +13,9 @@ struct SettingsAppearanceTab: View {
                     Text("Icon").tag(MenuBarLabelFormat.icon)
                 }
                 Picker("Theme", selection: $appearance) {
-                    Text("System").tag(Appearance.system)
-                    Text("Light").tag(Appearance.light)
-                    Text("Dark").tag(Appearance.dark)
+                    ForEach(Appearance.allCases, id: \.self) { option in
+                        Text(option.label).tag(option)
+                    }
                 }
             }
         }
@@ -24,7 +24,14 @@ struct SettingsAppearanceTab: View {
 }
 
 extension Appearance {
-    /// SwiftUI color scheme to enforce, or `nil` to follow the system.
+    var label: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
     var colorScheme: ColorScheme? {
         switch self {
         case .system: nil
