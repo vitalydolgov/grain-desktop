@@ -10,7 +10,6 @@ struct GrainPhoneApp: App {
         WindowGroup {
             TimerView()
                 .environment(timerRuntime)
-                .preferredColorScheme(.dark)
                 .task {
                     for await signal in timerRuntime.signals() {
                         switch signal {

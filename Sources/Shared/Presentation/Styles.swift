@@ -26,3 +26,24 @@ extension IntervalTag {
         }
     }
 }
+
+enum TimerFace: Equatable {
+    case ready
+    case active(IntervalTag)
+
+    init(status: SessionStatus, tag: IntervalTag?) {
+        switch status {
+        case .running, .paused:
+            self = tag.map(TimerFace.active) ?? .ready
+        case .idle, .completed:
+            self = .ready
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .ready: "Ready"
+        case .active(let tag): tag.label
+        }
+    }
+}

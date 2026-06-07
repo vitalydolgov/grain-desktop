@@ -4,38 +4,67 @@ import GrainApplication
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showingSettings = false
 
     var body: some View {
         ZStack {
-            Color.black
+            theme.background
                 .ignoresSafeArea()
-            ProgressRing(fraction: phaseRemainingFraction, color: phaseColor)
-                .frame(width: 300, height: 300)
-            VStack(spacing: 8) {
-                Text((currentTag ?? .a).label)
-                    .font(.customRegular(size: 28))
-                    .foregroundStyle(phaseColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .opacity(timerRuntime.status == .idle ? 0 : 1)
+
+            VStack(spacing: 0) {
+                PhaseLabel(face: face, theme: theme)
+                    .padding(.top, 16)
+
+                Spacer()
+
                 Text(format(timerRuntime.remainingTime))
-                    .font(.customMonospaced(size: 76))
-                    .foregroundStyle(.white)
+                    .font(.customMonospaced(size: 88))
+                    .foregroundStyle(theme.timerTextColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
-                CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
-                    .foregroundStyle(.white)
-                    .padding(.top, 16)
+
+                IntervalDots(count: timerRuntime.plan.intervals.count,
+                             currentIndex: timerRuntime.currentIndex.index,
+                             color: theme.accentColor)
+                    .padding(.top, 24)
+
+                Spacer()
+
+                ControlBar(theme: theme, isStopped: face == .ready)
+                    .padding(.bottom, 16)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 32)
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button { showingSettings = true } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(theme.controlIconColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 4)
         }
-        .animation(.linear(duration: 0.3), value: phaseRemainingFraction)
+        .animation(.easeInOut(duration: 0.4), value: theme.labelColor)
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
                 SettingsView()
             }
         }
+    }
+
+    private var face: TimerFace {
+        TimerFace(status: timerRuntime.status, tag: currentTag)
+    }
+
+    private var theme: PhaseTheme {
+        face.theme(colorScheme)
     }
 
     private var currentTag: IntervalTag? {
@@ -45,41 +74,95 @@ struct TimerView: View {
         return intervals[idx.index].tag
     }
 
-    private var phaseRemainingFraction: Double {
-        let idx = timerRuntime.currentIndex
-        let intervals = timerRuntime.plan.intervals
-        guard idx.index < intervals.count else { return 1 }
-        let total = intervals[idx.index].duration.millis
-        guard total > 0 else { return 1 }
-        let clamped = min(timerRuntime.remainingTime.millis, total)
-        return Double(clamped) / Double(total)
-    }
-
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
-        return String(format: "%d:%02d", total / 60, total % 60)
-    }
-
-    private var phaseColor: Color {
-        currentTag?.color ?? Color(white: 0.3)
+        return String(format: "%02d:%02d", total / 60, total % 60)
     }
 }
 
-private struct ProgressRing: View {
-    let fraction: Double
-    let color: Color
+private struct PhaseLabel: View {
+    let face: TimerFace
+    let theme: PhaseTheme
 
     var body: some View {
-        ZStack {
+        HStack(spacing: 8) {
             Circle()
-                .stroke(Color.white.opacity(0.08), lineWidth: 14)
-            Circle()
-                .trim(from: 0, to: max(0, min(1, fraction)))
-                .stroke(color, style: StrokeStyle(lineWidth: 14, lineCap: .round))
-                .shadow(color: color.opacity(0.7), radius: 8)
-                .shadow(color: color.opacity(0.45), radius: 16)
-                .shadow(color: color.opacity(0.25), radius: 24)
-                .rotationEffect(.degrees(-90))
+                .fill(theme.labelColor)
+                .frame(width: 7, height: 7)
+                .shadow(color: theme.labelColor.opacity(0.5), radius: 2.5, x: 0, y: 1.5)
+            Text(face.label.uppercased())
+                .font(.customRegular(size: 15))
+                .tracking(4)
+                .foregroundStyle(theme.labelColor)
+                .lineLimit(1)
         }
+    }
+}
+
+private struct ControlBar: View {
+    let theme: PhaseTheme
+    let isStopped: Bool
+    @Environment(RuntimeProxy.self) private var timerRuntime
+
+    var body: some View {
+        HStack(spacing: 28) {
+            if !isStopped {
+                ControlBarButton(icon: "arrow.counterclockwise",
+                             size: 64, iconSize: 22,
+                             surface: theme.controlSurfaceColor,
+                             foreground: theme.controlIconColor,
+                             action: timerRuntime.reset)
+            }
+
+            ControlBarButton(icon: timerRuntime.status == .running ? "pause.fill" : "play.fill",
+                         size: 88, iconSize: 30,
+                         surface: theme.accentColor,
+                         foreground: theme.onAccentColor,
+                         glow: theme.accentColor,
+                         action: toggleTimer)
+
+            if !isStopped {
+                ControlBarButton(icon: "forward.end.fill",
+                             size: 64, iconSize: 19,
+                             surface: theme.controlSurfaceColor,
+                             foreground: theme.controlIconColor,
+                             action: {})
+            }
+        }
+    }
+
+    private func toggleTimer() {
+        switch timerRuntime.status {
+        case .running: timerRuntime.pause()
+        case .paused: timerRuntime.resume()
+        case .idle, .completed: timerRuntime.start()
+        }
+    }
+}
+
+private struct ControlBarButton: View {
+    let icon: String
+    let size: CGFloat
+    let iconSize: CGFloat
+    let surface: Color
+    let foreground: Color
+    var glow: Color? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Circle()
+                .fill(surface)
+                .frame(width: size, height: size)
+                .shadow(color: (glow ?? .black).opacity(glow == nil ? 0.08 : 0.35),
+                        radius: glow == nil ? 6 : 14,
+                        x: 0, y: glow == nil ? 3 : 8)
+                .overlay {
+                    Image(systemName: icon)
+                        .font(.system(size: iconSize, weight: .semibold))
+                        .foregroundStyle(foreground)
+                }
+        }
+        .buttonStyle(.plain)
     }
 }

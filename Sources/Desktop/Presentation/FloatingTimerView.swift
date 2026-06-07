@@ -38,9 +38,10 @@ private struct TimerContent: View {
     var body: some View {
         VStack(spacing: 12) {
             IntervalDots(
+                count: timerRuntime.plan.intervals.count,
                 currentIndex: timerRuntime.currentIndex.index,
-                total: timerRuntime.plan.intervals.count,
-                color: phaseColor
+                color: phaseColor,
+                inactiveColor: .white.opacity(0.25)
             )
             .opacity(timerRuntime.status == .idle ? 0 : 1)
             Text(format(timerRuntime.remainingTime))
@@ -60,29 +61,5 @@ private struct TimerContent: View {
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
         return String(format: "%d:%02d", total / 60, total % 60)
-    }
-}
-
-private struct IntervalDots: View {
-    let currentIndex: Int
-    let total: Int
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 7) {
-            ForEach(0..<total, id: \.self) { i in
-                Circle()
-                    .fill(i == currentIndex ? color : Color.white.opacity(0.25))
-                    .frame(
-                        width: i == currentIndex ? 8 : 6,
-                        height: i == currentIndex ? 8 : 6
-                    )
-                    .shadow(
-                        color: i == currentIndex ? color.opacity(0.8) : .clear,
-                        radius: 4
-                    )
-                    .animation(.easeInOut(duration: 0.2), value: currentIndex)
-            }
-        }
     }
 }
