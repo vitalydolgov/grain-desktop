@@ -5,6 +5,8 @@ import GrainApplication
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(RuntimeSynchronizer.self) private var synchronizer
+    @AppStorage("planTotalMinutes") private var totalMinutes = 60
+    @AppStorage("planEndWithB") private var endWithB = true
     @State private var showingSettings = false
     @State private var showingRemoteSyncPrompt = false
 
@@ -52,6 +54,15 @@ struct TimerView: View {
         }
         .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
             showingRemoteSyncPrompt = isPending
+        }
+        .onAppear(perform: setUpDefaultPlanIfNeeded)
+    }
+
+    private func setUpDefaultPlanIfNeeded() {
+        guard timerRuntime.plan.intervals.isEmpty else { return }
+        let configuration = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)
+        if let plan = configuration.makePlan() {
+            timerRuntime.setPlan(plan)
         }
     }
 

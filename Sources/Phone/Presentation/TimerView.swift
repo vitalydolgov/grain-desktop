@@ -5,6 +5,8 @@ import GrainApplication
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("planTotalMinutes") private var totalMinutes = 60
+    @AppStorage("planEndWithB") private var endWithB = true
     @State private var showingSettings = false
 
     var body: some View {
@@ -56,6 +58,15 @@ struct TimerView: View {
             NavigationStack {
                 SettingsView()
             }
+        }
+        .onAppear(perform: setUpDefaultPlanIfNeeded)
+    }
+
+    private func setUpDefaultPlanIfNeeded() {
+        guard timerRuntime.plan.intervals.isEmpty else { return }
+        let configuration = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)
+        if let plan = configuration.makePlan() {
+            timerRuntime.setPlan(plan)
         }
     }
 
