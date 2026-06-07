@@ -5,42 +5,48 @@ import GrainApplication
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @State private var configuration = PlanConfiguration.default
 
     var body: some View {
-        @Bindable var settings = settings
         List {
             Section {
                 NavigationLink {
                     ValuePicker(title: "Total",
                                 values: Array(stride(from: 40, through: 240, by: 5)),
                                 unit: "min",
-                                amount: $settings.configuration.totalMinutes)
+                                amount: $configuration.totalMinutes)
                 } label: {
-                    SettingRow(title: "Total", value: "\(settings.configuration.totalMinutes) min")
+                    SettingRow(title: "Total", value: "\(configuration.totalMinutes) min")
                 }
                 if canToggleEndMode {
                     Toggle("Skip final break", isOn: Binding(
-                        get: { !settings.configuration.endWithB },
-                        set: { settings.configuration.endWithB = !$0 }
+                        get: { !configuration.endWithB },
+                        set: { configuration.endWithB = !$0 }
                     ))
                 }
             }
             Section {
-                if let plan = settings.configuration.makePlan() {
+                if let plan = configuration.makePlan() {
                     SplitPlanner(plan: plan)
                 }
             }
         }
         .navigationTitle("Plan")
-        .onChange(of: settings.configuration.totalMinutes) {
-            settings.configuration = getFeasibleConfiguration(for: settings.configuration)
+        .onChange(of: settings.configuration, initial: true) {
+            configuration = settings.configuration
+        }
+        .onChange(of: configuration) {
+            let feasible = getFeasibleConfiguration(for: configuration)
+            guard feasible == configuration else {
+                configuration = feasible
+                return
+            }
             apply()
         }
-        .onChange(of: settings.configuration.endWithB) { apply() }
     }
 
     private var canToggleEndMode: Bool {
-        settings.configuration.canPlan(endWithB: true) && settings.configuration.canPlan(endWithB: false)
+        configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
     }
 
     private func getFeasibleConfiguration(for configuration: PlanConfiguration) -> PlanConfiguration {
@@ -53,9 +59,11 @@ struct SettingsView: View {
     }
 
     private func apply() {
-        if let plan = settings.configuration.makePlan() {
+        guard configuration != settings.configuration else { return }
+        if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
+        settings.configuration = configuration
         Task { await settings.save() }
     }
 }

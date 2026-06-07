@@ -6,21 +6,21 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @State private var configuration = PlanConfiguration.default
 
     var body: some View {
-        @Bindable var settings = settings
         Form {
             Section {
-                Stepper("Total: \(settings.configuration.totalMinutes) min",
-                        value: $settings.configuration.totalMinutes, in: 40...240, step: 5)
+                Stepper("Total: \(configuration.totalMinutes) min",
+                        value: $configuration.totalMinutes, in: 40...240, step: 5)
                 Toggle("Skip final break", isOn: Binding(
-                    get: { !settings.configuration.endWithB },
-                    set: { settings.configuration.endWithB = !$0 }
+                    get: { !configuration.endWithB },
+                    set: { configuration.endWithB = !$0 }
                 ))
                 .disabled(!canToggleEndMode)
             }
             Section {
-                if let plan = settings.configuration.makePlan() {
+                if let plan = configuration.makePlan() {
                     SplitPlanner(plan: plan)
                 }
             }
@@ -34,15 +34,21 @@ struct SettingsView: View {
                 }
             }
         }
-        .onChange(of: settings.configuration.totalMinutes) {
-            settings.configuration = getFeasibleConfiguration(for: settings.configuration)
+        .onChange(of: settings.configuration, initial: true) {
+            configuration = settings.configuration
+        }
+        .onChange(of: configuration) {
+            let feasible = getFeasibleConfiguration(for: configuration)
+            guard feasible == configuration else {
+                configuration = feasible
+                return
+            }
             apply()
         }
-        .onChange(of: settings.configuration.endWithB) { apply() }
     }
 
     private var canToggleEndMode: Bool {
-        settings.configuration.canPlan(endWithB: true) && settings.configuration.canPlan(endWithB: false)
+        configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
     }
 
     private func getFeasibleConfiguration(for configuration: PlanConfiguration) -> PlanConfiguration {
@@ -55,9 +61,11 @@ struct SettingsView: View {
     }
 
     private func apply() {
-        if let plan = settings.configuration.makePlan() {
+        guard configuration != settings.configuration else { return }
+        if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
+        settings.configuration = configuration
         Task { await settings.save() }
     }
 }
