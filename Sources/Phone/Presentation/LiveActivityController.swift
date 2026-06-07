@@ -2,7 +2,6 @@ import ActivityKit
 import Foundation
 import GrainDomain
 
-/// Bridges the timer's session state to a lock-screen Live Activity.
 @MainActor
 final class LiveActivityController {
     private var activity: Activity<GrainActivityAttributes>?
