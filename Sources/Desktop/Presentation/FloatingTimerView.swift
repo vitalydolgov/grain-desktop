@@ -4,9 +4,9 @@ import GrainDomain
 struct FloatingTimerView: View {
     var body: some View {
         ZStack {
-            Color.black
+            Color(nsColor: .windowBackgroundColor)
             TimerContent()
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
         }
         .frame(width: 250)
         .background(FloatingWindowConfigurator(keepOnTop: true))
