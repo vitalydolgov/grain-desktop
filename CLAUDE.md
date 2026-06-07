@@ -49,7 +49,7 @@ Cross-device state propagation is described separately under [Synchronization](#
 - **Presentation (desktop)** — macOS menubar and floating-window UI; includes `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
 - **Settings** — a *bounded context* that owns configuration, display preferences, and session restore state
 - **Presentation (watch)** — watchOS UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control and `RuntimeSynchronizer` for optional Mac sync
-- **Presentation (iOS)** — iPhone UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control
+- **Presentation (phone)** — iPhone UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control
 - **State transport** — iCloud publisher/subscriber channels (`NSUbiquitousKeyValueStore`) that carry runtime state between devices, with a local channel for debug and the simulator. One-way — no commands flow back. See [Synchronization](#synchronization)
 - **Application** and **Domain** — see the [Grain](https://github.com/vitalydolgov/grain) library
 

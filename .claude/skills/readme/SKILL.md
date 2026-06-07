@@ -12,5 +12,6 @@ Keep this section structure:
 1. **Introduction** — what this repo is about, in a sentence or two.
 2. **Stack** — inline bold label followed by a single line, not a heading.
 3. **Features** — capabilities a reader would not already infer from the introduction.
-4. **Architecture** — the underlying system design: its layers and components.
-5. **Building & Testing** — how to set up the project, build, and run tests.
+4. **Targets** — the apps the project builds (structure, not design): one bullet per target, mapping it to its platform and Xcode scheme.
+5. **Architecture** — the underlying system design: its layers and components.
+6. **Building & Testing** — how to set up the project, build, and run tests.
