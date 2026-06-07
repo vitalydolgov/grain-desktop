@@ -17,10 +17,11 @@ struct CompactControlPanel: View {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 16, weight: .bold))
                 }
-            }
-            Button { timerRuntime.reset() } label: {
-                Image(systemName: "arrow.counterclockwise")
-                    .font(.system(size: 16, weight: .bold))
+            } else {
+                Button { timerRuntime.reset() } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 16, weight: .bold))
+                }
             }
         }
         .buttonStyle(.plain)
