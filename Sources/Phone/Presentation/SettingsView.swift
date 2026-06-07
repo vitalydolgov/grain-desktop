@@ -9,10 +9,6 @@ struct SettingsView: View {
     @State private var totalMinutes = PlanConfiguration.default.totalMinutes
     @State private var endWithB = PlanConfiguration.default.endWithB
 
-    private var configuration: PlanConfiguration {
-        PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)
-    }
-
     var body: some View {
         Form {
             Section {
@@ -25,7 +21,7 @@ struct SettingsView: View {
                 .disabled(!canToggleEndMode)
             }
             Section {
-                if let plan = configuration.makePlan() {
+                if let plan = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).makePlan() {
                     SplitPlanner(plan: plan)
                 }
             }
@@ -44,33 +40,32 @@ struct SettingsView: View {
             totalMinutes = config.totalMinutes
             endWithB = config.endWithB
             selectFeasibleEndMode()
-            updatePlan()
+            if let plan = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).makePlan() {
+                timerRuntime.setPlan(plan)
+            }
         }
         .onChange(of: totalMinutes) { selectFeasibleEndMode(); save() }
         .onChange(of: endWithB) { save() }
     }
 
     private var canToggleEndMode: Bool {
-        configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
+        PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: true)
+            && PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false)
     }
 
     private func selectFeasibleEndMode() {
-        if configuration.canPlan(endWithB: true) {
+        if PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: true) {
             endWithB = true
-        } else if configuration.canPlan(endWithB: false) {
+        } else if PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).canPlan(endWithB: false) {
             endWithB = false
         }
     }
 
-    private func updatePlan() {
-        if let plan = configuration.makePlan() {
+    private func save() {
+        if let plan = PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB).makePlan() {
             timerRuntime.setPlan(plan)
         }
-    }
-
-    private func save() {
-        updatePlan()
-        Task { try? await settings.plan.save(configuration) }
+        Task { try? await settings.plan.save(PlanConfiguration(totalMinutes: totalMinutes, endWithB: endWithB)) }
     }
 }
 
