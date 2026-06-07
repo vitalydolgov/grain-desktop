@@ -48,7 +48,7 @@ struct TimerView: View {
             Button("Sync") { synchronizer.acceptSync() }
             Button("Not Now", role: .cancel) { synchronizer.declineSync() }
         } message: {
-            Text(syncPromptMessage)
+            Text("A session is running there.")
         }
         .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
             showingRemoteSyncPrompt = isPending
@@ -65,10 +65,6 @@ struct TimerView: View {
 
     private var syncPromptTitle: String {
         "Sync with \(syncSourceName)?"
-    }
-
-    private var syncPromptMessage: String {
-        "A session is running on your \(syncSourceName)."
     }
 
     private var currentTag: IntervalTag? {

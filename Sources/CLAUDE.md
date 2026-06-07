@@ -13,5 +13,6 @@ Guidelines for adding new features or modifying existing code.
 
 - Swift 6, strict concurrency on.
 - Doc comments are a single short line. No parameter or returns blocks.
+- Don't add comments that restate what the code does; prefer clear names.
 - Never use force unwrap (`!`) or force try (`try!`) — use `guard let … else { preconditionFailure(…) }` so the impossible case is explicit and loud rather than a silent crash.
 - Never use `@unchecked Sendable` — if the compiler cannot verify `Sendable`, refactor to make it evident (immutable state, actor isolation) rather than suppressing the check.

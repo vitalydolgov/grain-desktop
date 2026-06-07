@@ -28,7 +28,6 @@ final class RuntimeSynchronizer {
         Task { [weak self] in await self?.beginSyncMonitoring() }
     }
 
-    /// The source currently awaiting the user's sync decision, if any.
     var pendingSource: RuntimeStateSync.Source? {
         if case .pending(let source, _) = syncMode { source } else { nil }
     }
