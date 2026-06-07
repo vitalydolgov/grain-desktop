@@ -38,11 +38,11 @@ struct SettingsView: View {
             configuration = settings.configuration
         }
         .onChange(of: configuration) {
-            guard configuration.isFeasible else {
-                configuration = getFeasibleConfiguration(for: configuration)
-                return
+            if configuration.isFeasible {
+                saveConfiguration(configuration)
+            } else if let alternative = feasibleAlternative(for: configuration) {
+                configuration = alternative
             }
-            saveConfiguration()
         }
     }
 
@@ -50,16 +50,12 @@ struct SettingsView: View {
         configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
     }
 
-    private func getFeasibleConfiguration(for configuration: PlanConfiguration) -> PlanConfiguration {
-        if configuration.canPlan(endWithB: true) {
-            return PlanConfiguration(totalMinutes: configuration.totalMinutes, endWithB: true)
-        } else if configuration.canPlan(endWithB: false) {
-            return PlanConfiguration(totalMinutes: configuration.totalMinutes, endWithB: false)
-        }
-        return configuration
+    private func feasibleAlternative(for configuration: PlanConfiguration) -> PlanConfiguration? {
+        let alternative = PlanConfiguration(totalMinutes: configuration.totalMinutes, endWithB: !configuration.endWithB)
+        return alternative.isFeasible ? alternative : nil
     }
 
-    private func saveConfiguration() {
+    private func saveConfiguration(_ configuration: PlanConfiguration) {
         guard configuration != settings.configuration else { return }
         if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
