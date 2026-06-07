@@ -16,6 +16,7 @@ struct GrainDesktopApp: App {
             MenuBarExtraView()
                 .environment(timerRuntime)
                 .environment(settings)
+                .preferredColorScheme(settings.preferences.appearance.colorScheme)
         } label: {
             MenuBarView()
                 .environment(timerRuntime)
@@ -70,6 +71,7 @@ struct GrainDesktopApp: App {
                 }
             }
             .environment(timerRuntime)
+            .preferredColorScheme(settings.preferences.appearance.colorScheme)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
@@ -78,6 +80,7 @@ struct GrainDesktopApp: App {
             SettingsView()
                 .environment(timerRuntime)
                 .environment(settings)
+                .preferredColorScheme(settings.preferences.appearance.colorScheme)
         }
     }
 
