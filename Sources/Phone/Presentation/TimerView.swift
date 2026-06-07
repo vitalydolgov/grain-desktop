@@ -126,7 +126,7 @@ private struct ControlBar: View {
                              size: 64, iconSize: 19,
                              surface: theme.controlSurfaceColor,
                              foreground: theme.controlIconColor,
-                             action: {})
+                             action: timerRuntime.skip)
             }
         }
     }

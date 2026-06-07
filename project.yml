@@ -23,7 +23,7 @@ settings:
 packages:
   Grain:
     url: https://github.com/vitalydolgov/grain
-    revision: 5df9105
+    revision: 2fb0e43
 
 targets:
   Desktop:
