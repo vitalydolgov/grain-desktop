@@ -26,7 +26,7 @@ struct GrainDesktopApp: App {
                         timerRuntime.plan = plan
                     }
                     settings.preferences = await settings.display.load()
-                    applyAppearance(settings.preferences.appearance)
+                    NSApp.appearance = settings.preferences.appearance.nsAppearance
                     NotificationService.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
@@ -61,7 +61,7 @@ struct GrainDesktopApp: App {
                     saveRuntimeState()
                 }
                 .onChange(of: settings.preferences.appearance) { _, appearance in
-                    applyAppearance(appearance)
+                    NSApp.appearance = appearance.nsAppearance
                 }
         }
         .menuBarExtraStyle(.window)
@@ -84,10 +84,6 @@ struct GrainDesktopApp: App {
                 .environment(timerRuntime)
                 .environment(settings)
         }
-    }
-
-    private func applyAppearance(_ appearance: Appearance) {
-        NSApp.appearance = appearance.nsAppearance
     }
 
     private func saveRuntimeState() {
