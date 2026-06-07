@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import GrainDomain
 import GrainApplication
 
@@ -16,7 +17,6 @@ struct GrainDesktopApp: App {
             MenuBarExtraView()
                 .environment(timerRuntime)
                 .environment(settings)
-                .preferredColorScheme(settings.preferences.appearance.colorScheme)
         } label: {
             MenuBarView()
                 .environment(timerRuntime)
@@ -26,6 +26,7 @@ struct GrainDesktopApp: App {
                         timerRuntime.plan = plan
                     }
                     settings.preferences = await settings.display.load()
+                    applyAppearance(settings.preferences.appearance)
                     NotificationService.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
@@ -59,6 +60,9 @@ struct GrainDesktopApp: App {
                 .onChange(of: timerRuntime.currentIndex.index) { _, _ in
                     saveRuntimeState()
                 }
+                .onChange(of: settings.preferences.appearance) { _, appearance in
+                    applyAppearance(appearance)
+                }
         }
         .menuBarExtraStyle(.window)
 
@@ -71,7 +75,6 @@ struct GrainDesktopApp: App {
                 }
             }
             .environment(timerRuntime)
-            .preferredColorScheme(settings.preferences.appearance.colorScheme)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
@@ -80,8 +83,11 @@ struct GrainDesktopApp: App {
             SettingsView()
                 .environment(timerRuntime)
                 .environment(settings)
-                .preferredColorScheme(settings.preferences.appearance.colorScheme)
         }
+    }
+
+    private func applyAppearance(_ appearance: Appearance) {
+        NSApp.appearance = appearance.nsAppearance
     }
 
     private func saveRuntimeState() {
@@ -94,6 +100,16 @@ struct GrainDesktopApp: App {
             case .idle, .completed:
                 await settings.runtimeState.clear()
             }
+        }
+    }
+}
+
+private extension Appearance {
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
         }
     }
 }
