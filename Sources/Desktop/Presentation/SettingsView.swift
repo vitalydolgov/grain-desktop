@@ -3,31 +3,27 @@ import GrainDomain
 
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
-    @State private var displayPrefs = DisplayPreferences.default
 
     var body: some View {
+        @Bindable var settings = settings
         TabView {
             SettingsPlanTab()
                 .tabItem { Label("Plan", systemImage: "timer") }
 
             SettingsAppearanceTab(
-                menuBarFormat: $displayPrefs.menuBarLabelFormat,
-                appearance: $displayPrefs.appearance
+                menuBarFormat: $settings.preferences.menuBarLabelFormat,
+                appearance: $settings.preferences.appearance
             )
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
         .frame(width: 300, height: 300)
         .background(FloatingWindowConfigurator(keepOnTop: true))
-        .task {
-            displayPrefs = await settings.display.load()
-        }
-        .onChange(of: displayPrefs) { saveDisplay() }
+        .onChange(of: settings.preferences) { saveDisplay() }
     }
 
     private func saveDisplay() {
         Task {
-            try? await settings.display.save(displayPrefs)
-            settings.preferences = displayPrefs
+            try? await settings.display.save(settings.preferences)
         }
     }
 }
