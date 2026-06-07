@@ -61,6 +61,10 @@ final class RuntimeProxy: RuntimeSynchronizerDelegate {
         Task { try? await runtime.resume() }
     }
 
+    func skip() {
+        Task { try? await runtime.skip() }
+    }
+
     func reset() {
         Task { await runtime.reset() }
     }

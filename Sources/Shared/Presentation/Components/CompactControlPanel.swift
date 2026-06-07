@@ -13,23 +13,29 @@ struct CompactControlPanel: View {
                     .font(.system(size: 18, weight: .bold))
                     .frame(width: 24)
             }
-            if isStopped {
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape.fill")
+            switch status {
+            case .running:
+                Button { timerRuntime.skip() } label: {
+                    Image(systemName: "forward.fill")
                         .font(.system(size: 16, weight: .bold))
                 }
-            } else {
                 Button { timerRuntime.reset() } label: {
                     Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 16, weight: .bold))
+                }
+            case .paused:
+                Button { timerRuntime.reset() } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 16, weight: .bold))
+                }
+            case .idle, .completed:
+                Button(action: onSettings) {
+                    Image(systemName: "gearshape.fill")
                         .font(.system(size: 16, weight: .bold))
                 }
             }
         }
         .buttonStyle(.plain)
-    }
-
-    private var isStopped: Bool {
-        status == .idle || status == .completed
     }
 
     private func togglePlayback() {
