@@ -19,7 +19,11 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: |
+          # project.yml includes local.yml (developer-only, gitignored);
+          # provide an empty one so the include resolves on CI.
+          echo '{}' > local.yml
+          xcodegen generate
 
       - name: Build macOS app
         run: |
