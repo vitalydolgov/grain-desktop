@@ -54,9 +54,7 @@ struct TimerView: View {
         }
         .animation(.easeInOut(duration: 0.4), value: theme.labelColor)
         .sheet(isPresented: $showingSettings) {
-            NavigationStack {
-                SettingsView()
-            }
+            SettingsView()
         }
     }
 
