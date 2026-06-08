@@ -28,6 +28,7 @@ extension MenuBarLabelFormat {
     var label: String {
         switch self {
         case .time: "Time"
+        case .minutes: "Minutes"
         case .icon: "Icon"
         }
     }
