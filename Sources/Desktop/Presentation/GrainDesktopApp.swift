@@ -60,7 +60,7 @@ struct GrainDesktopApp: App {
                     saveRuntimeState()
                 }
         }
-        .menuBarExtraStyle(.window)
+        .menuBarExtraStyle(.menu)
 
         Window("Floating Timer", id: "floating-timer") {
             Group {

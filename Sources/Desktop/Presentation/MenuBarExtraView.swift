@@ -7,72 +7,58 @@ struct MenuBarExtraView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            TimerActions(runStatus: timerRuntime.status)
-            Divider()
-            MenuRow("Floating Window") {
-                NSApp.activate(ignoringOtherApps: true)
-                openWindow(id: "floating-timer")
-            }
-            Divider()
-            MenuRow("Settings...") {
-                NSApp.activate(ignoringOtherApps: true)
-                openSettings()
-            }
-            Divider()
-            MenuRow("Quit") { NSApp.terminate(nil) }
+        TimerActions(runStatus: timerRuntime.status)
+
+        Divider()
+
+        Button {
+            NSApp.activate(ignoringOtherApps: true)
+            openWindow(id: "floating-timer")
+        } label: {
+            Label("Floating", image: "pin.left")
         }
-        .frame(width: 200)
-    }
 
-    private var currentIntervalTag: IntervalTag? {
-        let idx = timerRuntime.currentIndex
-        let intervals = timerRuntime.plan.intervals
-        guard timerRuntime.status != .idle, idx.index < intervals.count else { return nil }
-        return intervals[idx.index].tag
-    }
+        Divider()
 
-    private func format(_ duration: Duration) -> String {
-        let total = duration.seconds
-        return String(format: "%02d:%02d", total / 60, total % 60)
+        Button {
+            NSApp.activate(ignoringOtherApps: true)
+            openSettings()
+        } label: {
+            Label("Settings...", systemImage: "gear")
+        }
+        .keyboardShortcut(",", modifiers: .command)
+
+        Button {
+            NSApp.terminate(nil)
+        } label: {
+            Label("Quit", systemImage: "xmark.rectangle")
+        }
+        .keyboardShortcut("q", modifiers: .command)
     }
 }
 
 private struct TimerActions: View {
-    @Environment(RuntimeProxy.self) private var timerRuntime
     let runStatus: SessionStatus
+    @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         switch runStatus {
         case .running:
-            MenuRow("Pause") { timerRuntime.pause() }
+            Button { timerRuntime.pause() } label: {
+                Label("Pause", systemImage: "pause.fill")
+            }
         case .paused:
-            MenuRow("Resume") { timerRuntime.resume() }
+            Button { timerRuntime.resume() } label: {
+                Label("Resume", systemImage: "play.fill")
+            }
         case .idle, .completed:
-            MenuRow("Start") { timerRuntime.start() }
+            Button { timerRuntime.start() } label: {
+                Label("Start", systemImage: "play.fill")
+            }
         }
-        MenuRow("Reset") { timerRuntime.reset() }
-            .disabled(runStatus == .idle)
-    }
-}
-
-private struct MenuRow: View {
-    let label: String
-    let action: () -> Void
-
-    init(_ label: String, action: @escaping () -> Void) {
-        self.label = label
-        self.action = action
-    }
-
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        Button { timerRuntime.reset() } label: {
+            Label("Reset", systemImage: "arrow.counterclockwise")
         }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .contentShape(Rectangle())
+        .disabled(runStatus == .idle)
     }
 }
