@@ -11,8 +11,7 @@ struct SettingsView: View {
                 .tabItem { Label("Plan", systemImage: "timer") }
 
             SettingsAppearanceTab(
-                menuBarFormat: $preferences.menuBarLabelFormat,
-                appearance: $preferences.appearance
+                menuBarFormat: $preferences.menuBarLabelFormat
             )
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
