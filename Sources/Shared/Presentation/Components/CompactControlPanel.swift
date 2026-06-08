@@ -3,30 +3,33 @@ import GrainDomain
 
 struct CompactControlPanel: View {
     let status: SessionStatus
+    let onSettings: (() -> Void)?
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         HStack(spacing: 16) {
             Button(action: togglePlayback) {
-                Image(systemName: status == .running ? "pause.fill" : "play.fill")
-                    .font(.system(size: 16, weight: .bold))
-                    .frame(width: 24, height: 24)
+                ControlPanelIcon(systemName: status == .running ? "pause.fill" : "play.fill")
             }
             if status == .running {
                 Button { timerRuntime.skip() } label: {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 16, weight: .bold))
-                        .frame(width: 24, height: 24)
+                    ControlPanelIcon(systemName: "forward.end.fill")
+                }
+            } else if status == .idle || status == .completed, let onSettings {
+                Button(action: onSettings) {
+                    ControlPanelIcon(systemName: "gearshape.fill")
                 }
             } else {
                 Button { timerRuntime.reset() } label: {
-                    Image(systemName: "arrow.counterclockwise")
-                        .font(.system(size: 16, weight: .bold))
-                        .frame(width: 24, height: 24)
+                    ControlPanelIcon(systemName: "arrow.counterclockwise")
                 }
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private var isInactive: Bool {
+        status == .idle || status == .completed
     }
 
     private func togglePlayback() {
@@ -35,5 +38,15 @@ struct CompactControlPanel: View {
         case .paused: timerRuntime.resume()
         case .idle, .completed: timerRuntime.start()
         }
+    }
+}
+
+private struct ControlPanelIcon: View {
+    let systemName: String
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 16, weight: .bold))
+            .frame(width: 24, height: 24)
     }
 }

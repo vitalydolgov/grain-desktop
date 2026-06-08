@@ -60,6 +60,7 @@ private struct PinButton: View {
 private struct TimerContent: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(spacing: 12) {
@@ -69,11 +70,11 @@ private struct TimerContent: View {
                 color: phaseColor,
                 inactiveColor: inactiveDotColor
             )
-            .opacity(timerRuntime.status == .idle ? 0 : 1)
+            .opacity(timerRuntime.status == .idle || timerRuntime.status == .completed ? 0 : 1)
             Text(format(timerRuntime.remainingTime))
                 .font(.customMonospaced(size: 60))
                 .animation(.snappy, value: timerRuntime.remainingTime)
-            CompactControlPanel(status: timerRuntime.status)
+            CompactControlPanel(status: timerRuntime.status) { openSettings() }
         }
     }
 
