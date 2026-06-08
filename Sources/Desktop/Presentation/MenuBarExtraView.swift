@@ -3,14 +3,22 @@ import GrainDomain
 
 struct MenuBarExtraView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TimerHeader(displayTime: format(timerRuntime.remainingTime), tag: currentIntervalTag)
-            Divider()
             TimerActions(runStatus: timerRuntime.status)
             Divider()
-            TimerSettingsRow()
+            MenuRow("Floating Window") {
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: "floating-timer")
+            }
+            Divider()
+            MenuRow("Settings...") {
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            }
             Divider()
             MenuRow("Quit") { NSApp.terminate(nil) }
         }
@@ -30,27 +38,6 @@ struct MenuBarExtraView: View {
     }
 }
 
-private struct TimerHeader: View {
-    let displayTime: String
-    let tag: IntervalTag?
-
-    var body: some View {
-        HStack {
-            Text(displayTime)
-                .font(.system(.title, design: .monospaced))
-                .monospacedDigit()
-            Spacer()
-            if let tag {
-                Text(tag.label)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-    }
-}
-
 private struct TimerActions: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
     let runStatus: SessionStatus
@@ -66,22 +53,6 @@ private struct TimerActions: View {
         }
         MenuRow("Reset") { timerRuntime.reset() }
             .disabled(runStatus == .idle)
-    }
-}
-
-private struct TimerSettingsRow: View {
-    @Environment(\.openSettings) private var openSettings
-    @Environment(\.openWindow) private var openWindow
-
-    var body: some View {
-        MenuRow("Keep on Top") {
-            NSApp.activate(ignoringOtherApps: true)
-            openWindow(id: "floating-timer")
-        }
-        MenuRow("Settings") {
-            NSApp.activate(ignoringOtherApps: true)
-            openSettings()
-        }
     }
 }
 

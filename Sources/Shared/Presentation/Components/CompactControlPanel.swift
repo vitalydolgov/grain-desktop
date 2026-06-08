@@ -8,19 +8,21 @@ struct CompactControlPanel: View {
     var body: some View {
         HStack(spacing: 16) {
             Button(action: togglePlayback) {
-                Image(systemName: playbackIcon)
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 24)
+                Image(systemName: status == .running ? "pause.fill" : "play.fill")
+                    .font(.system(size: 16, weight: .bold))
+                    .frame(width: 24, height: 24)
             }
             if status == .running {
                 Button { timerRuntime.skip() } label: {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 16, weight: .bold))
+                        .frame(width: 24, height: 24)
                 }
             } else {
                 Button { timerRuntime.reset() } label: {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 16, weight: .bold))
+                        .frame(width: 24, height: 24)
                 }
             }
         }
@@ -33,9 +35,5 @@ struct CompactControlPanel: View {
         case .paused: timerRuntime.resume()
         case .idle, .completed: timerRuntime.start()
         }
-    }
-
-    private var playbackIcon: String {
-        status == .running ? "pause.fill" : "play.fill"
     }
 }

@@ -10,9 +10,7 @@ struct FloatingWindowConfigurator: NSViewRepresentable {
         let view = NSView()
         DispatchQueue.main.async {
             guard let window = view.window else { return }
-            if keepOnTop {
-                window.level = .floating
-            }
+            window.level = keepOnTop ? .floating : .normal
             window.isMovableByWindowBackground = movableByBackground
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             window.styleMask.remove(.resizable)
@@ -27,6 +25,7 @@ struct FloatingWindowConfigurator: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
-
+        guard let window = nsView.window else { return }
+        window.level = keepOnTop ? .floating : .normal
     }
 }

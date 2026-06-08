@@ -11,20 +11,15 @@ struct IntervalDots: View {
             ForEach(0..<count, id: \.self) { index in
                 Circle()
                     .fill(index == currentIndex ? color : inactive)
-                    .frame(width: size(for: index), height: size(for: index))
+                    .frame(width: 8, height: 8)
                     .shadow(color: index == currentIndex ? color.opacity(0.5) : .clear,
                             radius: 2.5, x: 0, y: 1.5)
                     .animation(.easeInOut(duration: 0.2), value: currentIndex)
             }
         }
-        .frame(height: 9)
     }
 
     private var inactive: Color {
         inactiveColor ?? color.opacity(0.22)
-    }
-
-    private func size(for index: Int) -> CGFloat {
-        index == currentIndex ? 9 : 6
     }
 }

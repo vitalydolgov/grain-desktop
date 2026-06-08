@@ -2,6 +2,8 @@ import SwiftUI
 import GrainDomain
 
 struct FloatingTimerView: View {
+    @AppStorage("floatingWindowPinned") private var isPinned = true
+
     var body: some View {
         ZStack {
             Color(nsColor: .windowBackgroundColor)
@@ -9,25 +11,49 @@ struct FloatingTimerView: View {
                 .foregroundStyle(.primary)
         }
         .frame(width: 250)
-        .background(FloatingWindowConfigurator(keepOnTop: true))
+        .overlay(alignment: .topTrailing) {
+            PinButton(isPinned: $isPinned)
+        }
+        .background(FloatingWindowConfigurator(keepOnTop: isPinned))
         .ignoresSafeArea()
     }
 }
 
 @available(macOS 26.0, *)
 struct GlassFloatingTimerView: View {
+    @AppStorage("floatingWindowPinned") private var isPinned = true
+
     var body: some View {
         TimerContent()
-            .foregroundStyle(.gray)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .topTrailing) {
+                PinButton(isPinned: $isPinned)
+            }
+            .foregroundStyle(.gray)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
             .background(FloatingWindowConfigurator(
-                keepOnTop: true,
+                keepOnTop: isPinned,
                 movableByBackground: true,
                 transparentBackground: true
             ))
             .containerBackground(.clear, for: .window)
             .ignoresSafeArea()
+    }
+}
+
+private struct PinButton: View {
+    @Binding var isPinned: Bool
+
+    var body: some View {
+        Button {
+            isPinned.toggle()
+        } label: {
+            Image(isPinned ? "pin.left.fill" : "pin.left")
+                .resizable()
+                .frame(width: 20, height: 20)
+        }
+        .buttonStyle(.plain)
+        .padding(6)
     }
 }
 
