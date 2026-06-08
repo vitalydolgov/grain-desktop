@@ -67,10 +67,10 @@ private struct TimerContent: View {
             IntervalDots(
                 count: timerRuntime.plan.intervals.count,
                 currentIndex: timerRuntime.currentIndex.index,
+                status: timerRuntime.status,
                 color: phaseColor,
                 inactiveColor: inactiveDotColor
             )
-            .opacity(timerRuntime.status == .idle || timerRuntime.status == .completed ? 0 : 1)
             Text(format(timerRuntime.remainingTime))
                 .font(.customMonospaced(size: 60))
                 .animation(.snappy, value: timerRuntime.remainingTime)

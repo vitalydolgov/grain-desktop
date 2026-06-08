@@ -26,12 +26,13 @@ struct TimerView: View {
 
                 IntervalDots(count: timerRuntime.plan.intervals.count,
                              currentIndex: timerRuntime.currentIndex.index,
+                             status: timerRuntime.status,
                              color: theme.accentColor)
                     .padding(.top, 24)
 
                 Spacer()
 
-                ControlBar(theme: theme, isStopped: face == .ready)
+                ControlBar(theme: theme)
                     .padding(.bottom, 16)
             }
             .padding(.horizontal, 32)
@@ -101,17 +102,15 @@ private struct PhaseLabel: View {
 
 private struct ControlBar: View {
     let theme: PhaseTheme
-    let isStopped: Bool
     @Environment(RuntimeProxy.self) private var timerRuntime
 
     var body: some View {
         HStack(spacing: 28) {
-            if !isStopped {
-                ControlBarButton(icon: "arrow.counterclockwise",
-                             size: 64, iconSize: 22,
-                             surface: theme.controlSurfaceColor,
-                             foreground: theme.controlIconColor,
-                             action: timerRuntime.reset)
+            switch timerRuntime.status {
+            case .running, .paused:
+                Color.clear.frame(width: 64, height: 64)
+            case .idle, .completed:
+                EmptyView()
             }
 
             ControlBarButton(icon: timerRuntime.status == .running ? "pause.fill" : "play.fill",
@@ -121,12 +120,21 @@ private struct ControlBar: View {
                          glow: theme.accentColor,
                          action: toggleTimer)
 
-            if !isStopped {
+            switch timerRuntime.status {
+            case .running:
                 ControlBarButton(icon: "forward.end.fill",
                              size: 64, iconSize: 19,
                              surface: theme.controlSurfaceColor,
                              foreground: theme.controlIconColor,
                              action: timerRuntime.skip)
+            case .paused:
+                ControlBarButton(icon: "arrow.counterclockwise",
+                             size: 64, iconSize: 22,
+                             surface: theme.controlSurfaceColor,
+                             foreground: theme.controlIconColor,
+                             action: timerRuntime.reset)
+            case .idle, .completed:
+                EmptyView()
             }
         }
     }
