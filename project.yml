@@ -95,8 +95,6 @@ targets:
       path: Sources/Watch/GrainWatch.entitlements
       properties:
         com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
-        com.apple.developer.watchkit.background-modes:
-          - self-care
 
   Phone:
     type: application

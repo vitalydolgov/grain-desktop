@@ -74,7 +74,7 @@ struct TimerView: View {
 
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
-        return String(format: "%d:%02d", total / 60, total % 60)
+        return String(format: "%llu:%02llu", total / 60, total % 60)
     }
 
     private var phaseColor: Color {
