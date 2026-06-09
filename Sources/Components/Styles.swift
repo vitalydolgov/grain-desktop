@@ -1,7 +1,7 @@
 import SwiftUI
 import GrainDomain
 
-extension Font {
+public extension Font {
     static func customMonospaced(size: CGFloat) -> Font {
         .custom("SUSE Mono", size: size)
     }
@@ -11,7 +11,7 @@ extension Font {
     }
 }
 
-extension IntervalTag {
+public extension IntervalTag {
     var label: String {
         switch self {
         case .a: "Focus"
@@ -20,11 +20,11 @@ extension IntervalTag {
     }
 }
 
-enum TimerFace: Equatable {
+public enum TimerFace: Equatable {
     case ready
     case active(IntervalTag)
 
-    init(status: SessionStatus, tag: IntervalTag?) {
+    public init(status: SessionStatus, tag: IntervalTag?) {
         switch status {
         case .running, .paused:
             self = tag.map(TimerFace.active) ?? .ready
@@ -33,7 +33,7 @@ enum TimerFace: Equatable {
         }
     }
 
-    var label: String {
+    public var label: String {
         switch self {
         case .ready: "Ready"
         case .active(let tag): tag.label

@@ -1,5 +1,6 @@
 import SwiftUI
 import GrainDomain
+import GrainComponents
 
 struct WatchThemeFactory: AppThemeFactory {
     func splitBarTheme(for scheme: ColorScheme) -> any SplitBarTheme {

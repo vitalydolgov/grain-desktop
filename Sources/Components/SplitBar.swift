@@ -1,10 +1,14 @@
 import SwiftUI
 import GrainDomain
 
-struct SplitBar: View {
+public struct SplitBar: View {
     let intervals: [Interval]
 
-    var body: some View {
+    public init(intervals: [Interval]) {
+        self.intervals = intervals
+    }
+
+    public var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 1) {
                 ForEach(Array(intervals.enumerated()), id: \.offset) { _, interval in
@@ -47,11 +51,16 @@ private struct SplitSegment: View {
     }
 }
 
-struct SplitBarLegend: View {
+public struct SplitBarLegend: View {
     let spacing: CGFloat
     let dotSize: CGFloat
 
-    var body: some View {
+    public init(spacing: CGFloat, dotSize: CGFloat) {
+        self.spacing = spacing
+        self.dotSize = dotSize
+    }
+
+    public var body: some View {
         HStack(spacing: spacing) {
             PhaseKey(tag: .a, dotSize: dotSize)
             PhaseKey(tag: .b, dotSize: dotSize)

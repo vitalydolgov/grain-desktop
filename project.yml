@@ -26,6 +26,20 @@ packages:
     revision: 2fb0e43
 
 targets:
+  GrainComponents:
+    type: framework
+    supportedDestinations: [macOS, watchOS, iOS]
+    sources:
+      - Sources/Components
+    dependencies:
+      - package: Grain
+        product: GrainDomain
+    settings:
+      base:
+        SWIFT_VERSION: "6"
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.GrainComponents
+        GENERATE_INFOPLIST_FILE: YES
+
   Desktop:
     type: application
     platform: macOS
@@ -39,6 +53,7 @@ targets:
         product: GrainDomain
       - package: Grain
         product: GrainApplication
+      - target: GrainComponents
     settings:
       base:
         PRODUCT_NAME: Grain
@@ -73,6 +88,7 @@ targets:
         product: GrainDomain
       - package: Grain
         product: GrainApplication
+      - target: GrainComponents
     settings:
       base:
         PRODUCT_NAME: Grain
@@ -109,6 +125,7 @@ targets:
         product: GrainDomain
       - package: Grain
         product: GrainApplication
+      - target: GrainComponents
     settings:
       base:
         PRODUCT_NAME: Grain

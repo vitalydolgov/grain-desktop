@@ -1,18 +1,35 @@
 import SwiftUI
 import GrainDomain
 
-struct CompactControlPanel: View {
-    let status: SessionStatus
-    let onSettings: (() -> Void)?
-    @Environment(RuntimeProxy.self) private var timerRuntime
+@MainActor
+public protocol RuntimeControlProtocol: AnyObject {
+    func start()
+    func pause()
+    func resume()
+    func skip()
+    func reset()
+}
 
-    var body: some View {
+public struct CompactControlPanel: View {
+    let status: SessionStatus
+    let control: any RuntimeControlProtocol
+    let onSettings: (() -> Void)?
+
+    public init(status: SessionStatus,
+                control: any RuntimeControlProtocol,
+                onSettings: (() -> Void)? = nil) {
+        self.status = status
+        self.control = control
+        self.onSettings = onSettings
+    }
+
+    public var body: some View {
         HStack(spacing: 16) {
             Button(action: togglePlayback) {
                 ControlPanelIcon(systemName: status == .running ? "pause.fill" : "play.fill")
             }
             if status == .running {
-                Button { timerRuntime.skip() } label: {
+                Button(action: control.skip) {
                     ControlPanelIcon(systemName: "forward.end.fill")
                 }
             } else if status == .idle || status == .completed, let onSettings {
@@ -20,7 +37,7 @@ struct CompactControlPanel: View {
                     ControlPanelIcon(systemName: "gearshape.fill")
                 }
             } else {
-                Button { timerRuntime.reset() } label: {
+                Button(action: control.reset) {
                     ControlPanelIcon(systemName: "arrow.counterclockwise")
                 }
             }
@@ -28,15 +45,11 @@ struct CompactControlPanel: View {
         .buttonStyle(.plain)
     }
 
-    private var isInactive: Bool {
-        status == .idle || status == .completed
-    }
-
     private func togglePlayback() {
         switch status {
-        case .running: timerRuntime.pause()
-        case .paused: timerRuntime.resume()
-        case .idle, .completed: timerRuntime.start()
+        case .running: control.pause()
+        case .paused: control.resume()
+        case .idle, .completed: control.start()
         }
     }
 }

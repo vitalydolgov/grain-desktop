@@ -1,6 +1,5 @@
 import SwiftUI
 import GrainDomain
-import GrainApplication
 
 struct MenuBarView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime

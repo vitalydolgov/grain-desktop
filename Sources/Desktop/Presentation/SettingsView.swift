@@ -1,5 +1,4 @@
 import SwiftUI
-import GrainDomain
 
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings

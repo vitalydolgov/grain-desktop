@@ -1,5 +1,6 @@
 import SwiftUI
 import GrainDomain
+import GrainComponents
 
 struct SettingsPlanTab: View {
     @Environment(AppSettings.self) private var settings

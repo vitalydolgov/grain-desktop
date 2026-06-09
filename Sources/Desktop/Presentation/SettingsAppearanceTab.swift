@@ -1,5 +1,4 @@
 import SwiftUI
-import GrainDomain
 
 struct SettingsAppearanceTab: View {
     @Binding var menuBarFormat: MenuBarLabelFormat

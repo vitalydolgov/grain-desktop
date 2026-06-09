@@ -1,5 +1,6 @@
 import SwiftUI
 import GrainDomain
+import GrainComponents
 
 struct FloatingTimerView: View {
     @AppStorage("floatingWindowPinned") private var isPinned = true
@@ -74,7 +75,9 @@ private struct TimerContent: View {
             Text(format(timerRuntime.remainingTime))
                 .font(.customMonospaced(size: 60))
                 .animation(.snappy, value: timerRuntime.remainingTime)
-            CompactControlPanel(status: timerRuntime.status) { openSettings() }
+            CompactControlPanel(status: timerRuntime.status,
+                                control: timerRuntime,
+                                onSettings: { openSettings() })
         }
     }
 

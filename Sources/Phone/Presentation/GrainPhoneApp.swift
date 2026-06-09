@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import GrainApplication
+import GrainComponents
 
 @main
 struct GrainPhoneApp: App {

@@ -1,6 +1,7 @@
 import SwiftUI
 import GrainDomain
 import GrainApplication
+import GrainComponents
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
@@ -30,7 +31,9 @@ struct TimerView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundStyle(.white.opacity(0.6))
                     } else {
-                        CompactControlPanel(status: timerRuntime.status) { showingSettings = true }
+                        CompactControlPanel(status: timerRuntime.status,
+                                            control: timerRuntime,
+                                            onSettings: { showingSettings = true })
                             .foregroundStyle(.white)
                     }
                 }

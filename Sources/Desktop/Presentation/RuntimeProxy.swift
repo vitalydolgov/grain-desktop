@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import GrainDomain
 import GrainApplication
+import GrainComponents
 
 @Observable
 @MainActor
@@ -34,8 +35,6 @@ final class RuntimeProxy {
         }
     }
 
-    // MARK: Streams
-
     func signals() -> AsyncStream<TimerSignal> {
         runtime.signals
     }
@@ -44,12 +43,12 @@ final class RuntimeProxy {
         await runtime.makeRuntimeStateStream()
     }
 
-    // MARK: Commands
-
     func restore(from state: RuntimeState) {
         Task { await runtime.restore(timer: state.timer, plan: state.plan) }
     }
+}
 
+extension RuntimeProxy: RuntimeControlProtocol {
     func start() {
         let plan = plan
         Task { try? await runtime.start(plan: plan) }

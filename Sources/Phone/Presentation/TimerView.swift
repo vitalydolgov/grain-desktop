@@ -1,6 +1,7 @@
 import SwiftUI
 import GrainDomain
 import GrainApplication
+import GrainComponents
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime

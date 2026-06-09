@@ -1,6 +1,7 @@
 import SwiftUI
 import WatchKit
 import GrainApplication
+import GrainComponents
 
 @main
 struct GrainWatchApp: App {

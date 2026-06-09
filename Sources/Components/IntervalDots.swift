@@ -1,14 +1,22 @@
 import SwiftUI
 import GrainDomain
 
-struct IntervalDots: View {
+public struct IntervalDots: View {
     let count: Int
     let currentIndex: Int
     let status: SessionStatus
     let color: Color
-    var inactiveColor: Color? = nil
+    var inactiveColor: Color?
 
-    var body: some View {
+    public init(count: Int, currentIndex: Int, status: SessionStatus, color: Color, inactiveColor: Color? = nil) {
+        self.count = count
+        self.currentIndex = currentIndex
+        self.status = status
+        self.color = color
+        self.inactiveColor = inactiveColor
+    }
+
+    public var body: some View {
         HStack(spacing: 7) {
             ForEach(0..<count, id: \.self) { index in
                 Circle()
