@@ -19,12 +19,11 @@ struct SettingsView: View {
                 } label: {
                     SettingRow(title: "Total", value: "\(configuration.totalMinutes) min")
                 }
-                if canToggleEndMode {
-                    Toggle("Skip final break", isOn: Binding(
-                        get: { !configuration.endWithB },
-                        set: { configuration.endWithB = !$0 }
-                    ))
-                }
+                Toggle("Skip final break", isOn: Binding(
+                    get: { !configuration.endWithB },
+                    set: { configuration.endWithB = !$0 }
+                ))
+                .disabled(!canToggleEndMode)
             }
             Section {
                 if let plan = configuration.makePlan() {

@@ -12,11 +12,18 @@ struct SettingsPlanTab: View {
             Section {
                 Stepper("Total: \(configuration.totalMinutes) min",
                         value: $configuration.totalMinutes, in: 40...240, step: 5)
-                Toggle("Skip final break", isOn: Binding(
-                    get: { !configuration.endWithB },
-                    set: { configuration.endWithB = !$0 }
-                ))
-                .disabled(toggleLocked)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Skip final break", isOn: Binding(
+                        get: { !configuration.endWithB },
+                        set: { configuration.endWithB = !$0 }
+                    ))
+                    .disabled(toggleLocked)
+                    if toggleLocked {
+                        Text(skipBreakHint)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             Section {
                 if let plan = configuration.makePlan() {
@@ -35,6 +42,10 @@ struct SettingsPlanTab: View {
 
     private var toggleLocked: Bool {
         !(configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false))
+    }
+
+    private var skipBreakHint: String {
+        configuration.endWithB ? "No optimal split without final break" : "No optimal split with final break"
     }
 
     private func selectFeasibleMode() {
