@@ -1,11 +1,11 @@
-enum MenuBarLabelFormat: String, Codable, CaseIterable, Sendable {
+enum MenuBarMode: String, Codable, CaseIterable, Sendable {
     case time
     case minutes
     case icon
 }
 
 struct DisplayPreferences: Codable, Sendable, Equatable {
-    var menuBarLabelFormat: MenuBarLabelFormat
+    var menuBarMode: MenuBarMode
 
-    static let `default` = DisplayPreferences(menuBarLabelFormat: .time)
+    static let `default` = DisplayPreferences(menuBarMode: .icon)
 }

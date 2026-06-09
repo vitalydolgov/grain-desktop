@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct SettingsAppearanceTab: View {
-    @Binding var menuBarFormat: MenuBarLabelFormat
+    @Binding var menuBarFormat: MenuBarMode
 
     var body: some View {
         Form {
             Section {
                 Picker("Menu bar", selection: $menuBarFormat) {
-                    ForEach(MenuBarLabelFormat.allCases, id: \.self) { option in
+                    ForEach(MenuBarMode.allCases, id: \.self) { option in
                         Text(option.label).tag(option)
                     }
                 }
@@ -17,12 +17,12 @@ struct SettingsAppearanceTab: View {
     }
 }
 
-extension MenuBarLabelFormat {
+extension MenuBarMode {
     var label: String {
         switch self {
         case .time: "Time"
         case .minutes: "Minutes"
-        case .icon: "Icon"
+        case .icon: "Ring"
         }
     }
 }
