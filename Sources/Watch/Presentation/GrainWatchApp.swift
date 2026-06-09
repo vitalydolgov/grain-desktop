@@ -5,6 +5,7 @@ import GrainApplication
 @main
 struct GrainWatchApp: App {
     @State private var settings = AppSettings(plan: PlanSettings(store: UserDefaultsPlanSettingsStore()))
+    @State private var theme = AppTheme(WatchThemeFactory())
     @State private var timerRuntime: RuntimeProxy
     @State private var synchronizer: RuntimeSynchronizer
     private let extendedOSSession = ExtendedOSSession()
@@ -22,6 +23,7 @@ struct GrainWatchApp: App {
                 .environment(timerRuntime)
                 .environment(synchronizer)
                 .environment(settings)
+                .appTheme(theme)
                 .task {
                     await settings.load()
                     if let plan = settings.configuration.makePlan() {

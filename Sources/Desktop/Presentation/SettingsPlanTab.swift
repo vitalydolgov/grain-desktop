@@ -64,7 +64,7 @@ private struct PlanSummary: View {
                 SplitBar(intervals: plan.intervals)
                     .font(.system(size: 10))
                     .frame(height: 20)
-                SplitBarLegend()
+                SplitBarLegend(spacing: 12, dotSize: 9)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             HStack {
@@ -103,7 +103,7 @@ private struct StartButton: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(IntervalTag.a.color)
+            .background(Color(red: 0.23, green: 0.62, blue: 1.0))
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay {

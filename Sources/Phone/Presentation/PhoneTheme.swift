@@ -1,13 +1,20 @@
 import SwiftUI
 import GrainDomain
 
-extension TimerFace {
-    func theme(_ scheme: ColorScheme) -> PhaseTheme {
-        switch self {
-        case .ready: .idle(scheme)
-        case .active(let tag): tag.theme(scheme)
-        }
+struct PhoneThemeFactory: AppThemeFactory {
+    func splitBarTheme(for scheme: ColorScheme) -> any SplitBarTheme {
+        PhoneSplitBarTheme(colorScheme: scheme)
     }
+}
+
+private struct PhoneSplitBarTheme: SplitBarTheme {
+    let colorScheme: ColorScheme
+
+    func color(for tag: IntervalTag) -> Color {
+        tag.splitBarColor(for: colorScheme)
+    }
+
+    var labelColor: Color { .primary }
 }
 
 struct PhaseTheme {
@@ -45,9 +52,26 @@ struct PhaseTheme {
         onAccentColor: Color(white: 0.08))
 }
 
+extension TimerFace {
+    func theme(_ scheme: ColorScheme) -> PhaseTheme {
+        switch self {
+        case .ready: .idle(scheme)
+        case .active(let tag): tag.theme(scheme)
+        }
+    }
+}
+
 extension IntervalTag {
     func theme(_ scheme: ColorScheme) -> PhaseTheme {
         scheme == .dark ? darkTheme : lightTheme
+    }
+
+    func splitBarColor(for scheme: ColorScheme) -> Color {
+        let base: Color = switch self {
+        case .a: Color(red: 0.67, green: 0.82, blue: 0.98)
+        case .b: Color(red: 0.94, green: 0.84, blue: 0.57)
+        }
+        return scheme == .dark ? base.opacity(0.5) : base
     }
 
     private var lightTheme: PhaseTheme {

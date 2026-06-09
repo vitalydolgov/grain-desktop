@@ -108,7 +108,7 @@ private struct SplitPlanner: View {
                 .font(.system(size: 8))
                 .frame(height: 14)
             SplitBarLegend(spacing: 8, dotSize: 7)
-            .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 2)
     }

@@ -6,12 +6,14 @@ import GrainApplication
 struct GrainPhoneApp: App {
     @State private var settings = AppSettings(plan: PlanSettings(store: UserDefaultsPlanSettingsStore()))
     @State private var timerRuntime = RuntimeProxy()
+    @State private var theme = AppTheme(PhoneThemeFactory())
 
     var body: some Scene {
         WindowGroup {
             TimerView()
                 .environment(timerRuntime)
                 .environment(settings)
+                .appTheme(theme)
                 .task {
                     await settings.load()
                     if let plan = settings.configuration.makePlan() {

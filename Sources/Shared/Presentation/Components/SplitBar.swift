@@ -30,15 +30,16 @@ struct SplitBar: View {
 private struct SplitSegment: View {
     let interval: Interval
     let width: CGFloat
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         Text("\(minutes)")
-            .foregroundStyle(.white)
+            .foregroundStyle(theme.splitBarTheme.labelColor)
             .lineLimit(1)
             .minimumScaleFactor(0.5)
             .frame(width: width)
             .frame(maxHeight: .infinity)
-            .background(interval.tag.color)
+            .background(theme.splitBarTheme.color(for: interval.tag))
     }
 
     private var minutes: Int {
@@ -47,8 +48,8 @@ private struct SplitSegment: View {
 }
 
 struct SplitBarLegend: View {
-    var spacing: CGFloat = 12
-    var dotSize: CGFloat = 9
+    let spacing: CGFloat
+    let dotSize: CGFloat
 
     var body: some View {
         HStack(spacing: spacing) {
@@ -60,12 +61,13 @@ struct SplitBarLegend: View {
 
 private struct PhaseKey: View {
     let tag: IntervalTag
-    var dotSize: CGFloat = 9
+    let dotSize: CGFloat
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(tag.color)
+                .fill(theme.splitBarTheme.color(for: tag))
                 .frame(width: dotSize, height: dotSize)
             Text(tag.label)
                 .font(.caption2)

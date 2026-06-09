@@ -10,6 +10,7 @@ struct GrainDesktopApp: App {
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
+    @State private var theme = AppTheme(DesktopThemeFactory())
 
     var body: some Scene {
         MenuBarExtra {
@@ -78,6 +79,7 @@ struct GrainDesktopApp: App {
             SettingsView()
                 .environment(timerRuntime)
                 .environment(settings)
+                .appTheme(theme)
         }
     }
 

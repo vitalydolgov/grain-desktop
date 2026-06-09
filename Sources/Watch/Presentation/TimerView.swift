@@ -78,7 +78,11 @@ struct TimerView: View {
     }
 
     private var phaseColor: Color {
-        currentTag?.color ?? Color(white: 0.3)
+        switch currentTag {
+        case .a: Color(red: 0.23, green: 0.62, blue: 1.0)
+        case .b: Color(red: 0.96, green: 0.72, blue: 0.16)
+        case nil: Color(white: 0.3)
+        }
     }
 }
 

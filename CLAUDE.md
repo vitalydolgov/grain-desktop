@@ -92,6 +92,10 @@ The desktop runs the relay over its runtime's **state** stream. The relay dedupe
 
 On the watch, `RuntimeSynchronizer` subscribes to the store and tracks a sync mode: `.none` when no session is active remotely, `.pending` when a running or paused session is detected (prompting "Sync with Mac?"), `.synced` after the user accepts, and `.declined` if they dismiss. Only on acceptance does the synchronizer restore state into the watch's own Grain runtime; from there, the runtime's **state** stream drives the Watch `RuntimeProxy` and UI — the same streaming contract as the desktop, populated remotely.
 
+### Theming
+
+Each target has its own theme that follows the system appearance (light/dark). `AppTheme` is a shared `@Observable` class that holds the active color scheme and delegates color decisions to a per-target `AppThemeFactory`. A root view modifier keeps `AppTheme` in sync with the system appearance. The theme is injected at the root of each target's view hierarchy via `.appTheme(theme)` and read in child views with `@Environment(AppTheme.self)`.
+
 ## Building
 
 Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). Create `local.yml` in the project root for developer-specific settings such as `DEVELOPMENT_TEAM`.

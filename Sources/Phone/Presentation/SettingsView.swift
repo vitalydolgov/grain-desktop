@@ -241,8 +241,10 @@ private struct PlanPreviewCard: View {
                 SplitBar(intervals: plan.intervals)
                     .font(.customMonospaced(size: 11))
                     .frame(height: 26)
-                SplitBarLegend()
+                    .transaction { $0.animation = nil }
+                SplitBarLegend(spacing: 12, dotSize: 9)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .transaction { $0.animation = nil }
             }
         }
     }

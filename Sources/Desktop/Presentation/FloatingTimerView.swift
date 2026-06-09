@@ -82,7 +82,10 @@ private struct TimerContent: View {
         let idx = timerRuntime.currentIndex
         let intervals = timerRuntime.plan.intervals
         guard idx.index < intervals.count else { return Color(white: 0.3) }
-        return intervals[idx.index].tag.color
+        return switch intervals[idx.index].tag {
+        case .a: Color(red: 0.23, green: 0.62, blue: 1.0)
+        case .b: Color(red: 0.96, green: 0.72, blue: 0.16)
+        }
     }
 
     private var inactiveDotColor: Color {

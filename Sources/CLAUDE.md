@@ -9,6 +9,7 @@ Guidelines for adding new features or modifying existing code.
 - Order within a view struct: properties → `init` → `body` → private helpers.
 - Business logic lives as private methods on the view; extract a view model only when the logic is substantial enough to warrant a separate type.
 - Use `@AppStorage` only for state that's local to a single view and needs no app-wide observation.
+- Views do not have default values for their properties; always pass values explicitly at the call site.
 
 ## Common
 

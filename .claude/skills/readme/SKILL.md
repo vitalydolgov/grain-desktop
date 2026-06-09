@@ -13,5 +13,8 @@ Keep this section structure:
 2. **Stack** — inline bold label followed by a single line, not a heading.
 3. **Features** — capabilities a reader would not already infer from the introduction.
 4. **Targets** — the project's actual build targets (structure, not design): one bullet per target, each with a short description.
-5. **Architecture** — the underlying system design: its layers and components.
+5. **Architecture** — the underlying system design: its layers and components. Contains three subsections:
+   - **Composition** — components and their responsibilities
+   - **Synchronization** — cross-device state propagation
+   - **Theming** — per-target themes, system appearance, and view hierarchy injection
 6. **Building & Testing** — how to set up the project, build, and run tests.
