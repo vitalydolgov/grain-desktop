@@ -8,6 +8,6 @@ Build all three app targets concurrently.
 
 Run all three commands in a single response as simultaneous (concurrent) Bash tool calls:
 
-1. !`xcodebuild build -project GrainApp.xcodeproj -scheme Desktop -destination 'platform=macOS'`
-2. !`xcodebuild build -project GrainApp.xcodeproj -scheme Watch -destination 'generic/platform=watchOS Simulator'`
-3. !`xcodebuild build -project GrainApp.xcodeproj -scheme Phone -destination 'generic/platform=iOS Simulator'`
+1. !`xcodebuild build -project "$(find . -maxdepth 1 -name '*.xcodeproj' | head -1)" -scheme Desktop -destination 'platform=macOS'`
+2. !`xcodebuild build -project "$(find . -maxdepth 1 -name '*.xcodeproj' | head -1)" -scheme Watch -destination 'generic/platform=watchOS Simulator'`
+3. !`xcodebuild build -project "$(find . -maxdepth 1 -name '*.xcodeproj' | head -1)" -scheme Phone -destination 'generic/platform=iOS Simulator'`
