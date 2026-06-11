@@ -34,6 +34,8 @@ targets:
     dependencies:
       - package: Grain
         product: GrainDomain
+      - package: Grain
+        product: GrainApplication
     settings:
       base:
         SWIFT_VERSION: "6"
@@ -71,10 +73,6 @@ targets:
       path: Sources/Desktop/Info.plist
       properties:
         ATSApplicationFontsPath: .
-    entitlements:
-      path: Sources/Desktop/GrainDesktop.entitlements
-      properties:
-        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
 
   Watch:
     type: application
@@ -108,10 +106,6 @@ targets:
         UIAppFonts:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf
-    entitlements:
-      path: Sources/Watch/GrainWatch.entitlements
-      properties:
-        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain
 
   Phone:
     type: application
@@ -145,7 +139,3 @@ targets:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf
         CFBundleDisplayName: Grain
-    entitlements:
-      path: Sources/Phone/GrainPhone.entitlements
-      properties:
-        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.github.vitalydolgov.Grain

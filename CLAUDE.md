@@ -1,22 +1,16 @@
 # Project Grain
 
-A macOS menubar interval timer app with watchOS and iOS companions. Alternates between two phases (A and B) on a repeating cycle; the Mac, iPhone, and watch each run their own timer, and the watch can optionally sync with a session running on the Mac.
+An interval timer that alternates between focus and break phases on a repeating cycle. It ships as a macOS menubar app, a standalone iPhone app, and a watchOS companion to the phone; the Mac, phone, and watch each run their own timer, and the watch can optionally sync with — and remote-control — a session running on the phone.
 
 **Stack:** Swift 6 · SwiftUI
 
 ## Features
 
-- **Session persistence** — quitting the app or restarting the machine doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
-- **Configurable cycle length** — constant, growth, or decay mode controls whether phase durations stay equal or scale across cycles
-- **System notifications** on phase and session completion
-
-## Targets
-
-The project builds three application targets over the shared [Grain](https://github.com/vitalydolgov/grain) runtime:
-
-- **Desktop** (macOS 14.0) — menubar app with two faces over one runtime: a *menubar* popover for quick control and a detachable, always-on-top *floating window*
-- **Watch** (watchOS 10.0) — standalone timer; can optionally sync with a running Mac session
-- **Phone** (iOS 17.0) — standalone timer
+- **Partition mode** — set a total time and the app computes the optimal split between focus and break phases
+- **Three clients** — macOS, iOS, and watchOS apps sharing one design language, each adapted to its platform
+- **Phone–watch sync** — the watch can mirror and remote-control a running phone session
+- **Session persistence** — quitting the app or restarting the device doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
+- **Completion alerts** — every phase and session end is announced: a system notification on desktop, a haptic tap on watch and phone
 
 ## Architecture
 
@@ -24,7 +18,7 @@ The app follows Domain-Driven Design with three layers, plus a **Settings** boun
 
 ```mermaid
 flowchart TD
-    DP["Presentation<br/><i>macOS</i>"]
+    DP["Presentation"]
     DProxy[["Runtime Proxy<br/><i>@MainActor</i>"]]
     DP --> DProxy
     DProxy --> DGrain
@@ -37,66 +31,76 @@ flowchart TD
     DP -.->|signals| N
 
     DGrain["<b>Grain</b><br/><i>Runtime</i>"]
-
-    classDef grain fill:lightblue,stroke:steelblue
-    class DGrain grain
 ```
 
 Cross-device state propagation is described separately under [Synchronization](#synchronization).
 
 ### Composition
 
-- **Presentation (desktop)** — macOS menubar and floating-window UI; includes `RuntimeProxy`, which bridges the actor-based runtime to `@Observable` on the main actor
+How each app is put together: its presentation, the shared pieces that support it, and the streams that connect them.
+
+#### Three presentations
+
+Each **Presentation** is built on its own Grain runtime (**Application** and **Domain** layers). In every one, a `RuntimeProxy` bridges the actor-based runtime to `@Observable` on the main actor:
+
+- **Desktop** — macOS menubar and floating-window UI
+- **Phone** — iOS UI; publishes its session to a paired watch and applies the remote commands the watch sends back
+- **Watch** — watchOS UI; can optionally sync to a phone session and remote-control it
+
+#### Supporting components
+
+- **GrainComponents** — a cross-platform framework of shared SwiftUI building blocks (controls, interval indicators, and the theming primitives) that every presentation reuses
 - **Settings** — a *bounded context* that owns configuration, display preferences, and session restore state
-- **Presentation (watch)** — watchOS UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control and `RuntimeSynchronizer` for optional Mac sync
-- **Presentation (phone)** — iPhone UI with full timer controls and configurable phase durations; includes `RuntimeProxy` for local control
-- **State transport** — iCloud publisher/subscriber channels (`NSUbiquitousKeyValueStore`) that carry runtime state between devices, with a local channel for debug and the simulator. One-way — no commands flow back. See [Synchronization](#synchronization)
-- **Application** and **Domain** — see the [Grain](https://github.com/vitalydolgov/grain) library
+- **State transport** — a `WatchConnectivity` channel that carries runtime state from phone to the watch and routes runtime commands back from the watch to phone
 
-Each `RuntimeProxy` is fed by two streams from the Grain runtime:
+#### Runtime streams
 
-- **state** — a fresh snapshot after every change, which every proxy unpacks to keep its observable properties in sync.
-- **signals** — discrete lifecycle events the presentation layer reacts to without polling: desktop notifications, watch and iPhone haptics.
+Each `RuntimeProxy` drives one stream into the Grain runtime and reads two back:
+
+- **Commands** — the actions the UI issues, which the proxy applies to the runtime; on the phone these also arrive remotely from the watch
+- **States** — a fresh snapshot after every change, which every proxy unpacks to keep its observable properties in sync
+- **Signals** — discrete lifecycle events the presentation layer reacts to without polling: desktop notifications, watch and phone haptics
 
 ### Synchronization
 
-The watch runs its own Grain runtime with full timer control. Optionally, it can sync with a running Mac session: the **Relay** (`RuntimeStateRelay`) carries state over iCloud in one direction, Mac to Watch — no commands flow back. The iPhone is a standalone timer and takes no part in synchronization.
+The watch and the phone each run their own Grain runtime with full timer control. Optionally, the watch can sync with a running phone session and act as its remote: the **Relay** (`RuntimeStateRelay`) carries state over `WatchConnectivity`, phone to watch, and runtime commands flow back, watch to phone. The desktop is standalone and takes no part in synchronization.
+
+The diagram below traces the sync flow top to bottom, from the phone (iOS) down to the watch (watchOS):
 
 ```mermaid
 flowchart TD
-    subgraph macOS
-        DGrain["<b>Grain</b><br/><i>Runtime</i>"]
-        Relay[["Relay<br/><i>dedup + heartbeat</i>"]]
-        DGrain -.->|state| Relay
-    end
+    PGrain["<b>Grain</b><br/><i>Runtime</i>"]
+    Relay[["Relay<br/><i>dedup + heartbeat</i>"]]
+    PGrain -.->|state| Relay
 
-    Cloud(["iCloud<br/><i>key–value store</i>"])
+    Conn(["WatchConnectivity"])
 
-    subgraph watchOS
-        Sync[["Synchronizer<br/><i>@MainActor</i>"]]
-        Choice{"Sync?"}
-        WGrain["<b>Grain</b><br/><i>Runtime</i>"]
-        Sync --> Choice
-        Choice -.->|"accept streaming"| WGrain
-        Choice -.->|decline| Sync
-    end
+    Sync[["Synchronizer<br/><i>@MainActor</i>"]]
+    Choice{"Sync?"}
+    WGrain["<b>Grain</b><br/><i>Runtime</i>"]
+    Sync --> Choice
+    Choice -.->|"accept streaming"| WGrain
+    Choice -.->|decline| Sync
 
-    Relay -.->|publish| Cloud
-    Cloud -.->|subscribe| Sync
-
-    classDef grain fill:lightblue,stroke:steelblue
-    class DGrain,WGrain grain
+    Relay -.->|state| Conn
+    Conn -.->|state| Sync
+    Sync -.->|command| Conn
+    Conn -.->|command| PGrain
 ```
 
-The desktop runs the relay over its runtime's **state** stream. The relay dedupes — it republishes only when the session status or phase location changes — and writes each surviving snapshot to iCloud's key–value store. A built-in heartbeat (every 5 seconds) re-publishes the last known state so devices that connect late can still discover an active session.
+The relay forwards the phone runtime's **state** over the channel with two refinements: it **dedupes**, sending only when session status or phase actually changes, and a **heartbeat** re-sends the latest state so a watch that connects mid-session still discovers it.
 
-On the watch, `RuntimeSynchronizer` subscribes to the store and tracks a sync mode: `.none` when no session is active remotely, `.pending` when a running or paused session is detected (prompting "Sync with Mac?"), `.synced` after the user accepts, and `.declined` if they dismiss. Only on acceptance does the synchronizer restore state into the watch's own Grain runtime; from there, the runtime's **state** stream drives the Watch `RuntimeProxy` and UI — the same streaming contract as the desktop, populated remotely.
+Accepting the sync feeds that streamed state into the watch's *own* Grain runtime — so its `RuntimeProxy` and UI run the same contract as standalone, just sourced remotely.
+
+While synced, the watch is a true remote: its controls publish **commands** back (sequence-tagged) to the phone, which applies them and streams the resulting state forward, keeping both devices in lockstep. When the phone session ends, the watch falls back to standalone control.
 
 ### Theming
 
-Each target has its own theme that follows the system appearance (light/dark). `AppTheme` is a shared `@Observable` class that holds the active color scheme and delegates color decisions to a per-target `AppThemeFactory`. A root view modifier keeps `AppTheme` in sync with the system appearance. The theme is injected at the root of each target's view hierarchy via `.appTheme(theme)` and read in child views with `@Environment(AppTheme.self)`.
+Theming lives in the shared **GrainComponents** framework. A shared `AppTheme` tracks the system appearance (light/dark) and delegates color decisions to an `AppThemeFactory` that each app supplies — so the mechanism is shared while the palette stays per-platform. The theme is injected at the root of each app's view hierarchy and read from the environment in child views.
 
 ## Building
+
+The project builds three application targets, each with its own scheme: **Desktop** (macOS 15.0), **Phone** (iOS 18.0), and **Watch** (watchOS 11.0). The watch app is embedded in the phone app, shipping as its companion.
 
 Generate the Xcode project from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). Create `local.yml` in the project root for developer-specific settings such as `DEVELOPMENT_TEAM`.
 
@@ -118,7 +122,7 @@ Build the watch app:
 xcodebuild build -project GrainApp.xcodeproj -scheme Watch -destination 'generic/platform=watchOS Simulator'
 ```
 
-Build the iOS app:
+Build the phone app:
 
 ```sh
 xcodebuild build -project GrainApp.xcodeproj -scheme Phone -destination 'generic/platform=iOS Simulator'
