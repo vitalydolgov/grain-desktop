@@ -76,7 +76,7 @@ private struct TimerContent: View {
                 .font(.customMonospaced(size: 60))
                 .animation(.snappy, value: timerRuntime.remainingTime)
             CompactControlPanel(status: timerRuntime.status,
-                                control: timerRuntime,
+                                onCommand: timerRuntime.handle,
                                 onSettings: { openSettings() })
         }
     }

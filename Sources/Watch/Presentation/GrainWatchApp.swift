@@ -32,6 +32,11 @@ struct GrainWatchApp: App {
                     }
                 }
                 .task {
+                    for await command in synchronizer.commands {
+                        RuntimeConnectivity.commandPublisher.publish(command)
+                    }
+                }
+                .task {
                     for await signal in timerRuntime.signals() {
                         switch signal {
                         case .intervalCompleted:

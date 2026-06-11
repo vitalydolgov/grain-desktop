@@ -10,38 +10,40 @@ enum SyncMode: Sendable {
 }
 
 @MainActor
-protocol RuntimeSynchronizerDelegate: AnyObject {
+protocol RuntimeSynchronizerDelegate: RuntimeCommandHandler {
     func restore(timer: TimerSnapshot, plan: SessionPlan)
-    func reset()
 }
 
 @Observable
 @MainActor
-final class RuntimeSynchronizer {
+final class RuntimeSynchronizer: RuntimeCommandHandler {
     private(set) var syncMode: SyncMode = .none
     var status: SessionStatus = .idle
+
+    nonisolated let commands: AsyncStream<RuntimeCommand>
+    private let commandContn: AsyncStream<RuntimeCommand>.Continuation
 
     private weak var delegate: (any RuntimeSynchronizerDelegate)?
 
     init(delegate: any RuntimeSynchronizerDelegate) {
         self.delegate = delegate
+        (commands, commandContn) = AsyncStream.makeStream(of: RuntimeCommand.self)
         Task { [weak self] in await self?.beginSyncMonitoring() }
     }
 
     private func beginSyncMonitoring() async {
-        let subscriber = RuntimeStateSync.wearableSubscriber(following: .desktop)
-        for await remoteState in subscriber.states {
-            switch remoteState.timer.status {
+        for await state in RuntimeConnectivity.states {
+            switch state.timer.status {
             case .idle, .completed:
-                if case .synced = syncMode { reset() }
+                if case .synced = syncMode { delegate?.handle(.reset) }
                 syncMode = .none
             case .running, .paused:
                 switch syncMode {
                 case .synced:
-                    restore(from: remoteState)
+                    restore(from: state)
                 case .none:
                     if status == .idle || status == .completed {
-                        syncMode = .pending(remoteState)
+                        syncMode = .pending(state)
                     }
                 case .pending, .declined:
                     break
@@ -65,7 +67,7 @@ final class RuntimeSynchronizer {
         delegate?.restore(timer: state.timer, plan: state.plan)
     }
 
-    private func reset() {
-        delegate?.reset()
+    func handle(_ command: RuntimeCommand) {
+        commandContn.yield(command)
     }
 }

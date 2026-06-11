@@ -2,7 +2,6 @@ import Foundation
 import Observation
 import GrainDomain
 import GrainApplication
-import GrainComponents
 
 @Observable
 @MainActor
@@ -46,27 +45,8 @@ final class RuntimeProxy {
     func restore(from state: RuntimeState) {
         Task { await runtime.restore(timer: state.timer, plan: state.plan) }
     }
-}
 
-extension RuntimeProxy: RuntimeControlProtocol {
-    func start() {
-        let plan = plan
-        Task { try? await runtime.start(plan: plan) }
-    }
-
-    func pause() {
-        Task { try? await runtime.pause() }
-    }
-
-    func resume() {
-        Task { try? await runtime.resume() }
-    }
-
-    func skip() {
-        Task { try? await runtime.skip() }
-    }
-
-    func reset() {
-        Task { await runtime.reset() }
+    func handle(_ command: RuntimeCommand) {
+        Task { try? await runtime.handle(command) }
     }
 }

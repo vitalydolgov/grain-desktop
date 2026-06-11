@@ -16,27 +16,26 @@ struct TimerView: View {
             ProgressRing()
                 .padding(-6)
             VStack(spacing: 2) {
-                Text((currentTag ?? .a).label)
-                    .font(.customRegular(size: 20))
-                    .foregroundStyle(phaseColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .opacity(timerRuntime.status == .idle || timerRuntime.status == .completed ? 0 : 1)
+                HStack(spacing: 4) {
+                    if case .synced = synchronizer.syncMode {
+                        Image(systemName: "link")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(phaseColor)
+                    }
+                    Text((currentTag ?? .a).label)
+                        .font(.customRegular(size: 20))
+                        .foregroundStyle(phaseColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                .opacity(timerRuntime.status == .idle || timerRuntime.status == .completed ? 0 : 1)
                 Text(format(timerRuntime.remainingTime))
                     .font(.customMonospaced(size: 40))
                     .foregroundStyle(.white)
-                Group {
-                    if case .synced = synchronizer.syncMode {
-                        Image(systemName: "personalhotspot")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white.opacity(0.6))
-                    } else {
-                        CompactControlPanel(status: timerRuntime.status,
-                                            control: timerRuntime,
-                                            onSettings: { showingSettings = true })
-                            .foregroundStyle(.white)
-                    }
-                }
+                CompactControlPanel(status: timerRuntime.status,
+                                    onCommand: handler.handle,
+                                    onSettings: { showingSettings = true })
+                .foregroundStyle(.white)
                 .padding(.top, 6)
             }
             .padding(.horizontal, 28)
@@ -46,23 +45,39 @@ struct TimerView: View {
                 SettingsView()
             }
         }
-        .alert("Sync with Mac?", isPresented: $showingRemoteSyncPrompt) {
+        .alert("Sync with iPhone?", isPresented: $showingRemoteSyncPrompt) {
             Button("Sync") { synchronizer.acceptSync() }
             Button("Not Now", role: .cancel) { synchronizer.declineSync() }
         } message: {
-            Text("A session is running on your Mac.")
+            Text("A session is currently running.")
         }
-        .onChange(of: synchronizer.syncMode.isPending) { _, isPending in
-            showingRemoteSyncPrompt = isPending
+        .onChange(of: isSyncPending) { _, isSyncPending in
+            showingRemoteSyncPrompt = isSyncPending
+        }
+    }
+
+    private var isSyncPending: Bool {
+        if case .pending = synchronizer.syncMode {
+            true
+        } else {
+            false
         }
     }
 
     private var currentTag: IntervalTag? {
-        guard timerRuntime.status != .completed else { return nil }
+        guard timerRuntime.status != .idle, timerRuntime.status != .completed else { return nil }
         let idx = timerRuntime.currentIndex
         let intervals = timerRuntime.plan.intervals
         guard idx.index < intervals.count else { return nil }
         return intervals[idx.index].tag
+    }
+
+    private var handler: any RuntimeCommandHandler {
+        if case .synced = synchronizer.syncMode {
+            synchronizer
+        } else {
+            timerRuntime
+        }
     }
 
     private func format(_ duration: Duration) -> String {
@@ -77,10 +92,6 @@ struct TimerView: View {
         case nil: Color(white: 0.3)
         }
     }
-}
-
-private extension SyncMode {
-    var isPending: Bool { if case .pending = self { true } else { false } }
 }
 
 private struct ProgressRing: View {
@@ -104,7 +115,7 @@ private struct ProgressRing: View {
     }
 
     private var currentTag: IntervalTag? {
-        guard timerRuntime.status != .completed else { return nil }
+        guard timerRuntime.status != .idle, timerRuntime.status != .completed else { return nil }
         let idx = timerRuntime.currentIndex
         let intervals = timerRuntime.plan.intervals
         guard idx.index < intervals.count else { return nil }
@@ -112,6 +123,7 @@ private struct ProgressRing: View {
     }
 
     private var fraction: Double {
+        guard isLit else { return 1 }
         let idx = timerRuntime.currentIndex
         let intervals = timerRuntime.plan.intervals
         guard idx.index < intervals.count else { return 1 }

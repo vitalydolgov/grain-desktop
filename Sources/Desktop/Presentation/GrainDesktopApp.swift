@@ -50,10 +50,6 @@ struct GrainDesktopApp: App {
                         }
                     }
                 }
-                .task {
-                    let relay = RuntimeStateRelay(publisher: RuntimeStateSync.publisher(as: .desktop))
-                    await relay.transmit(states: await timerRuntime.runtimeStates())
-                }
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()
                 }

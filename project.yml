@@ -7,9 +7,9 @@ include:
 options:
   bundleIdPrefix: com.github.vitalydolgov
   deploymentTarget:
-    macOS: "14.0"
-    watchOS: "10.0"
-    iOS: "17.0"
+    macOS: "15.0"
+    watchOS: "11.0"
+    iOS: "18.0"
   createIntermediateGroups: true
 
 settings:
@@ -23,7 +23,7 @@ settings:
 packages:
   Grain:
     url: https://github.com/vitalydolgov/grain
-    revision: 2fb0e43
+    revision: d633a9c
 
 targets:
   GrainComponents:
@@ -102,7 +102,7 @@ targets:
       path: Sources/Watch/Info.plist
       properties:
         WKApplication: YES
-        WKWatchOnly: YES
+        WKCompanionAppBundleIdentifier: com.github.vitalydolgov.Grain
         WKBackgroundModes:
           - self-care
         UIAppFonts:
@@ -127,6 +127,8 @@ targets:
       - package: Grain
         product: GrainApplication
       - target: GrainComponents
+      - target: Watch
+        embed: true
     settings:
       base:
         PRODUCT_NAME: Grain

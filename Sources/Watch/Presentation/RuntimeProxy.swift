@@ -2,7 +2,6 @@ import Foundation
 import Observation
 import GrainDomain
 import GrainApplication
-import GrainComponents
 
 @Observable
 @MainActor
@@ -48,27 +47,8 @@ final class RuntimeProxy: RuntimeSynchronizerDelegate {
     func setPlan(_ plan: SessionPlan) {
         Task { await runtime.setPlan(plan) }
     }
-}
 
-extension RuntimeProxy: RuntimeControlProtocol {
-    func start() {
-        let plan = plan
-        Task { try? await runtime.start(plan: plan) }
-    }
-
-    func pause() {
-        Task { try? await runtime.pause() }
-    }
-
-    func resume() {
-        Task { try? await runtime.resume() }
-    }
-
-    func skip() {
-        Task { try? await runtime.skip() }
-    }
-
-    func reset() {
-        Task { await runtime.reset() }
+    func handle(_ command: RuntimeCommand) {
+        Task { try? await runtime.handle(command) }
     }
 }

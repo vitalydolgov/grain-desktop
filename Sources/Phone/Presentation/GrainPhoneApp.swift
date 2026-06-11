@@ -22,6 +22,15 @@ struct GrainPhoneApp: App {
                     }
                 }
                 .task {
+                    let relay = RuntimeStateRelay(publisher: RuntimeConnectivity.statePublisher)
+                    await relay.wire(states: await timerRuntime.runtimeStates())
+                }
+                .task {
+                    for await command in RuntimeConnectivity.commands {
+                        timerRuntime.handle(command)
+                    }
+                }
+                .task {
                     for await signal in timerRuntime.signals() {
                         switch signal {
                         case .intervalCompleted:

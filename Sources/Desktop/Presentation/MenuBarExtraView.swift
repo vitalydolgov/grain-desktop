@@ -44,19 +44,19 @@ private struct TimerActions: View {
     var body: some View {
         switch runStatus {
         case .running:
-            Button { timerRuntime.pause() } label: {
+            Button { timerRuntime.handle(.pause) } label: {
                 Label("Pause", systemImage: "pause.fill")
             }
         case .paused:
-            Button { timerRuntime.resume() } label: {
+            Button { timerRuntime.handle(.resume) } label: {
                 Label("Resume", systemImage: "play.fill")
             }
         case .idle, .completed:
-            Button { timerRuntime.start() } label: {
+            Button { timerRuntime.handle(.start) } label: {
                 Label("Start", systemImage: "play.fill")
             }
         }
-        Button { timerRuntime.reset() } label: {
+        Button { timerRuntime.handle(.reset) } label: {
             Label("Reset", systemImage: "arrow.counterclockwise")
         }
         .disabled(runStatus == .idle)

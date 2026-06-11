@@ -106,7 +106,7 @@ private struct StartButton: View {
     var body: some View {
         Button {
             timerRuntime.plan = plan
-            timerRuntime.start()
+            timerRuntime.handle(.start)
             dismiss()
         } label: {
             HStack(spacing: 4) {

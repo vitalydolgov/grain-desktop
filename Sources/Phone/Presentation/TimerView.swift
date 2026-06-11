@@ -125,13 +125,13 @@ private struct ControlBar: View {
                              size: 64, iconSize: 19,
                              surface: theme.controlSurfaceColor,
                              foreground: theme.controlIconColor,
-                             action: timerRuntime.skip)
+                             action: { timerRuntime.handle(.skip) })
             case .paused:
                 ControlBarButton(icon: "arrow.counterclockwise",
                              size: 64, iconSize: 22,
                              surface: theme.controlSurfaceColor,
                              foreground: theme.controlIconColor,
-                             action: timerRuntime.reset)
+                             action: { timerRuntime.handle(.reset) })
             case .idle, .completed:
                 EmptyView()
             }
@@ -140,9 +140,9 @@ private struct ControlBar: View {
 
     private func toggleTimer() {
         switch timerRuntime.status {
-        case .running: timerRuntime.pause()
-        case .paused: timerRuntime.resume()
-        case .idle, .completed: timerRuntime.start()
+        case .running: timerRuntime.handle(.pause)
+        case .paused: timerRuntime.handle(.resume)
+        case .idle, .completed: timerRuntime.handle(.start)
         }
     }
 }
