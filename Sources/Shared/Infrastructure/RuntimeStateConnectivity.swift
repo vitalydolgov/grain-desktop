@@ -18,9 +18,13 @@ private final class ConnectivitySession: NSObject, WCSessionDelegate, Sendable {
     let commands: AsyncStream<RuntimeCommand>
     private let commandContn: AsyncStream<RuntimeCommand>.Continuation
 
+    let reachability: AsyncStream<Bool>
+    private let reachabilityContn: AsyncStream<Bool>.Continuation
+
     private override init() {
         (states, stateContn) = AsyncStream.makeStream(of: RuntimeState.self)
         (commands, commandContn) = AsyncStream.makeStream(of: RuntimeCommand.self)
+        (reachability, reachabilityContn) = AsyncStream.makeStream(of: Bool.self)
         isSupported = WCSession.isSupported()
         super.init()
         guard isSupported else { return }
@@ -102,6 +106,10 @@ private final class ConnectivitySession: NSObject, WCSessionDelegate, Sendable {
         }
     }
 
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        reachabilityContn.yield(session.isReachable)
+    }
+
     #if os(iOS)
     func sessionDidBecomeInactive(_ session: WCSession) {}
     func sessionDidDeactivate(_ session: WCSession) { WCSession.default.activate() }
@@ -156,6 +164,10 @@ enum RuntimeConnectivity {
 
     static var commands: AsyncStream<RuntimeCommand> {
         CommandSubscriber().stream
+    }
+
+    static var reachability: AsyncStream<Bool> {
+        ConnectivitySession.shared.reachability
     }
 }
 #endif

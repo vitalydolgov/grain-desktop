@@ -18,9 +18,13 @@ struct TimerView: View {
             VStack(spacing: 2) {
                 HStack(spacing: 4) {
                     if case .synced = synchronizer.syncMode {
-                        Image(systemName: "link")
+                        Image(systemName: "personalhotspot")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(phaseColor)
+                    } else if case .disconnected = synchronizer.syncMode {
+                        Image(systemName: "personalhotspot.slash")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color(white: 0.5))
                     }
                     Text((currentTag ?? .a).label)
                         .font(.customRegular(size: 20))

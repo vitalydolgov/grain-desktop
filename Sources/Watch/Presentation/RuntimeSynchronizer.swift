@@ -7,6 +7,7 @@ enum SyncMode: Sendable {
     case pending(RuntimeState)
     case declined
     case synced
+    case disconnected
 }
 
 @MainActor
@@ -29,6 +30,7 @@ final class RuntimeSynchronizer: RuntimeCommandHandler {
         self.delegate = delegate
         (commands, commandContn) = AsyncStream.makeStream(of: RuntimeCommand.self)
         Task { [weak self] in await self?.beginSyncMonitoring() }
+        Task { [weak self] in await self?.beginConnectionMonitoring() }
     }
 
     private func beginSyncMonitoring() async {
@@ -39,7 +41,8 @@ final class RuntimeSynchronizer: RuntimeCommandHandler {
                 syncMode = .none
             case .running, .paused:
                 switch syncMode {
-                case .synced:
+                case .synced, .disconnected:
+                    syncMode = .synced
                     restore(from: state)
                 case .none:
                     if status == .idle || status == .completed {
@@ -48,6 +51,21 @@ final class RuntimeSynchronizer: RuntimeCommandHandler {
                 case .pending, .declined:
                     break
                 }
+            }
+        }
+    }
+
+    private func beginConnectionMonitoring() async {
+        for await isReachable in RuntimeConnectivity.reachability {
+            switch (isReachable, syncMode) {
+            case (false, .synced):
+                syncMode = .disconnected
+            case (false, .pending):
+                syncMode = .none
+            case (true, .disconnected):
+                syncMode = .synced
+            default:
+                break
             }
         }
     }
