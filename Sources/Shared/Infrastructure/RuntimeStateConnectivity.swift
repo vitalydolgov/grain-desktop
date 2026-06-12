@@ -53,11 +53,17 @@ private final class ConnectivitySession: NSObject, WCSessionDelegate, Sendable {
     }
 
     private func send(state: RuntimeState, over session: WCSession) {
+        #if os(iOS)
+        guard session.isWatchAppInstalled else { return }
+        #endif
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? session.updateApplicationContext(["state": data])
     }
 
     private func send(command: RuntimeCommand, over session: WCSession) {
+        #if os(watchOS)
+        guard session.isCompanionAppInstalled else { return }
+        #endif
         guard let data = try? JSONEncoder().encode(command) else { return }
         let seq = commandSeq.withLock { $0 += 1; return $0 }
         try? session.updateApplicationContext(["command": data, "seq": seq])
