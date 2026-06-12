@@ -46,6 +46,15 @@ struct GrainPhoneApp: App {
                 .task {
                     await PhoneNotification.realize(intents: timerRuntime.intents())
                 }
+                .task {
+                    var lastKey = ""
+                    for await state in await timerRuntime.runtimeStates() {
+                        let key = "\(state.timer.status)-\(state.timer.currentIndex.index)"
+                        guard key != lastKey else { continue }
+                        lastKey = key
+                        await LiveActivityService.update(from: state)
+                    }
+                }
         }
     }
 
