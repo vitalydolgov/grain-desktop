@@ -15,11 +15,7 @@ enum PhoneNotificationScheduler {
                 offset += Double(intervals[position].duration.millis) / 1000
             }
             guard offset > 0 else { continue }
-            let isLast = position == intervals.count - 1
-            let title = isLast
-                ? "Session completed"
-                : "\(intervals[position].tag == .a ? "Focus" : "Break") completed"
-            add(title: title, after: offset, identifier: "grain.phase.\(position)")
+            notify(after: offset, identifier: "grain.phase.\(position)")
         }
     }
 
@@ -27,9 +23,8 @@ enum PhoneNotificationScheduler {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
-    private static func add(title: String, after delay: TimeInterval, identifier: String) {
+    private static func notify(after delay: TimeInterval, identifier: String) {
         let content = UNMutableNotificationContent()
-        content.title = title
         content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "beep.wav"))
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)

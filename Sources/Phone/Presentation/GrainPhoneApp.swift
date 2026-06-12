@@ -11,6 +11,7 @@ struct GrainPhoneApp: App {
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
+    @State private var liveActivity = LiveActivity()
     @State private var theme = AppTheme(PhoneThemeFactory())
 
     var body: some Scene {
@@ -53,6 +54,17 @@ struct GrainPhoneApp: App {
                 }
                 .task {
                     await PhoneNotification.realize(intents: timerRuntime.intents())
+                }
+                .task {
+                    var lastKey = ""
+                    for await state in await timerRuntime.runtimeStates() {
+                        let key = "\(state.timer.status)-\(state.timer.currentIndex.index)"
+                        guard key != lastKey else { continue }
+                        lastKey = key
+                        var copy = liveActivity
+                        await copy.update(from: state)
+                        liveActivity = copy
+                    }
                 }
         }
     }

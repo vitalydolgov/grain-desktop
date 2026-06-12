@@ -48,9 +48,9 @@ targets:
     platform: macOS
     sources:
       - Sources/Desktop
-      - path: Sources/Shared
-        excludes:
-          - "**/*.txt"
+      - path: Sources/Shared/Notification
+      - path: Sources/Shared/Settings
+      - path: Sources/Shared/Resources
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -79,9 +79,10 @@ targets:
     platform: watchOS
     sources:
       - Sources/Watch
-      - path: Sources/Shared
-        excludes:
-          - "**/*.txt"
+      - path: Sources/Shared/Connectivity
+      - path: Sources/Shared/Notification
+      - path: Sources/Shared/Settings
+      - path: Sources/Shared/Resources
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -112,9 +113,11 @@ targets:
     platform: iOS
     sources:
       - Sources/Phone
-      - path: Sources/Shared
-        excludes:
-          - "**/*.txt"
+      - path: Sources/Shared/Connectivity
+      - path: Sources/Shared/LiveActivity
+      - path: Sources/Shared/Notification
+      - path: Sources/Shared/Settings
+      - path: Sources/Shared/Resources
     dependencies:
       - package: Grain
         product: GrainDomain
@@ -123,6 +126,9 @@ targets:
       - target: GrainComponents
       - target: Watch
         embed: true
+      - target: PhoneWidget
+        embed: true
+      - sdk: ActivityKit.framework
     settings:
       base:
         PRODUCT_NAME: Grain
@@ -139,3 +145,30 @@ targets:
           - Urbanist-VariableFont_wght.ttf
           - SUSEMono-VariableFont_wght.ttf
         CFBundleDisplayName: Grain
+        NSSupportsLiveActivities: YES
+
+  PhoneWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Sources/PhoneWidget
+      - path: Sources/Shared/LiveActivity
+      - path: Sources/Shared/Resources/Fonts
+    dependencies:
+      - target: GrainComponents
+      - sdk: WidgetKit.framework
+      - sdk: ActivityKit.framework
+    settings:
+      base:
+        PRODUCT_NAME: PhoneWidget
+        PRODUCT_BUNDLE_IDENTIFIER: com.github.vitalydolgov.Grain.PhoneWidget
+        SWIFT_VERSION: "6"
+        SKIP_INSTALL: YES
+    info:
+      path: Sources/PhoneWidget/Info.plist
+      properties:
+        UIAppFonts:
+          - Urbanist-VariableFont_wght.ttf
+          - SUSEMono-VariableFont_wght.ttf
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
