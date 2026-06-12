@@ -3,11 +3,13 @@ import Observation
 @MainActor
 @Observable
 final class AppSettings {
+    let plan: PlanSettings
+    let runtimeState: RuntimeStateSettings
     var configuration: PlanConfiguration = .default
-    private let plan: PlanSettings
 
-    init(plan: PlanSettings) {
+    init(plan: PlanSettings, runtimeState: RuntimeStateSettings) {
         self.plan = plan
+        self.runtimeState = runtimeState
     }
 
     func load() async {

@@ -6,6 +6,7 @@ import GrainApplication
 @Observable
 @MainActor
 final class RuntimeProxy {
+    private(set) var timer: TimerSnapshot?
     private(set) var status: SessionStatus = .idle
     private(set) var currentIndex: IntervalIndex = IntervalIndex(index: 0)
     private(set) var remainingTime: Duration = .zero
@@ -19,6 +20,7 @@ final class RuntimeProxy {
         Task { [weak self] in
             for await state in await runtime.makeRuntimeStateStream() {
                 guard let self else { break }
+                self.timer = state.timer
                 self.status = state.timer.status
                 self.currentIndex = state.timer.currentIndex
                 self.remainingTime = state.timer.remainingTime
@@ -33,6 +35,10 @@ final class RuntimeProxy {
 
     func runtimeStates() async -> AsyncStream<RuntimeState> {
         await runtime.makeRuntimeStateStream()
+    }
+
+    func restore(from state: RuntimeState) {
+        Task { await runtime.restore(timer: state.timer, plan: state.plan) }
     }
 
     func setPlan(_ plan: SessionPlan) {

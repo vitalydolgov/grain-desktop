@@ -5,7 +5,10 @@ import GrainComponents
 
 @main
 struct GrainPhoneApp: App {
-    @State private var settings = AppSettings(plan: PlanSettings(store: UserDefaultsPlanSettingsStore()))
+    @State private var settings = AppSettings(
+        plan: PlanSettings(store: UserDefaultsPlanSettingsStore()),
+        runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
+    )
     @State private var timerRuntime = RuntimeProxy()
     @State private var theme = AppTheme(PhoneThemeFactory())
 
@@ -15,12 +18,22 @@ struct GrainPhoneApp: App {
                 .environment(timerRuntime)
                 .environment(settings)
                 .appTheme(theme)
+                .onChange(of: timerRuntime.status) { _, _ in
+                    saveRuntimeState()
+                }
+                .onChange(of: timerRuntime.currentIndex.index) { _, _ in
+                    saveRuntimeState()
+                }
                 .task {
                     await settings.load()
                     if let plan = settings.configuration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
                     NotificationService.requestAuthorization()
+                    if let saved = await settings.runtimeState.load() {
+                        await settings.runtimeState.clear()
+                        timerRuntime.restore(from: saved)
+                    }
                 }
                 .task {
                     let relay = RuntimeStateRelay(publisher: RuntimeConnectivity.statePublisher)
@@ -50,6 +63,19 @@ struct GrainPhoneApp: App {
                         }
                     }
                 }
+        }
+    }
+
+    private func saveRuntimeState() {
+        guard let timer = timerRuntime.timer else { return }
+        let state = RuntimeState(snapshot: timer, plan: timerRuntime.plan)
+        Task {
+            switch timer.status {
+            case .running, .paused:
+                try? await settings.runtimeState.save(state)
+            case .idle, .completed:
+                await settings.runtimeState.clear()
+            }
         }
     }
 }
