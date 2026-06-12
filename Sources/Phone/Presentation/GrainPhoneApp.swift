@@ -20,6 +20,7 @@ struct GrainPhoneApp: App {
                     if let plan = settings.configuration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
+                    NotificationService.requestAuthorization()
                 }
                 .task {
                     let relay = RuntimeStateRelay(publisher: RuntimeConnectivity.statePublisher)
@@ -33,12 +34,19 @@ struct GrainPhoneApp: App {
                 .task {
                     for await signal in timerRuntime.signals() {
                         switch signal {
-                        case .intervalCompleted:
+                        case .intervalCompleted(let idx):
                             UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                        case .sessionCompleted, .sessionCompletedWhileAway:
+                            let plan = timerRuntime.plan
+                            guard idx.index < plan.intervals.count else { break }
+                            NotificationService.notifyPhaseCompleted(tag: plan.intervals[idx.index].tag)
+                        case .sessionCompleted:
                             UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            NotificationService.notifySessionCompleted()
+                        case .sessionCompletedWhileAway:
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            NotificationService.notifySessionCompleted(whileAway: true)
                         case .sessionRestored:
-                            break
+                            NotificationService.notifyStateRecovered()
                         }
                     }
                 }

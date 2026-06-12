@@ -1,10 +1,19 @@
 import UserNotifications
+import AudioToolbox
 import GrainDomain
 import GrainComponents
 
 @MainActor
 enum NotificationService {
     private static let delegate = ForegroundPresenter()
+    private static let beepSound: SystemSoundID = {
+        guard let url = Bundle.main.url(forResource: "beep", withExtension: "wav") else {
+            preconditionFailure("beep.wav missing from bundle")
+        }
+        var id: SystemSoundID = 0
+        AudioServicesCreateSystemSoundID(url as CFURL, &id)
+        return id
+    }()
 
     static func requestAuthorization() {
         UNUserNotificationCenter.current().delegate = delegate
@@ -15,11 +24,15 @@ enum NotificationService {
     }
 
     static func notifyPhaseCompleted(tag: IntervalTag) {
-        send(title: "\(tag.label) completed")
+        AudioServicesPlayAlertSound(beepSound)
     }
 
     static func notifySessionCompleted(whileAway: Bool = false) {
-        send(title: "Session completed", body: whileAway ? "Timer ran out while away" : nil)
+        if whileAway {
+            send(title: "Session completed", body: "Timer ran out while away")
+        } else {
+            AudioServicesPlayAlertSound(beepSound)
+        }
     }
 
     static func notifyStateRecovered() {
