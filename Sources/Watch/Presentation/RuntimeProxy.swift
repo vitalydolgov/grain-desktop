@@ -40,6 +40,10 @@ final class RuntimeProxy: RuntimeSynchronizerDelegate {
         runtime.signals
     }
 
+    func intents() -> AsyncStream<NotificationIntent> {
+        runtime.intents
+    }
+
     func restore(timer: TimerSnapshot, plan: SessionPlan) {
         Task { await runtime.restore(timer: timer, plan: plan) }
     }

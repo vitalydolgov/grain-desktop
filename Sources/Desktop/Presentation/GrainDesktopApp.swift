@@ -27,28 +27,14 @@ struct GrainDesktopApp: App {
                         timerRuntime.plan = plan
                     }
                     settings.preferences = await settings.display.load()
-                    NotificationService.requestAuthorization()
+                    try? await DesktopNotification.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(from: saved)
                     }
                 }
                 .task {
-                    for await signal in timerRuntime.signals() {
-                        switch signal {
-                        case .intervalCompleted(let idx):
-                            let plan = timerRuntime.plan
-                            guard idx.index < plan.intervals.count else { break }
-                            let tag = plan.intervals[idx.index].tag
-                            NotificationService.notifyPhaseCompleted(tag: tag)
-                        case .sessionCompleted:
-                            NotificationService.notifySessionCompleted()
-                        case .sessionCompletedWhileAway:
-                            NotificationService.notifySessionCompleted(whileAway: true)
-                        case .sessionRestored:
-                            NotificationService.notifyStateRecovered()
-                        }
-                    }
+                    await DesktopNotification.realize(intents: timerRuntime.intents())
                 }
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()

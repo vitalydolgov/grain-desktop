@@ -26,7 +26,7 @@ struct TimerView: View {
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Color(white: 0.5))
                     }
-                    Text((currentTag ?? .a).label)
+                    Text((currentTag ?? .a) == .a ? "Focus" : "Break")
                         .font(.customRegular(size: 20))
                         .foregroundStyle(phaseColor)
                         .lineLimit(1)

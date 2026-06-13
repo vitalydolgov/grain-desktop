@@ -37,16 +37,7 @@ struct GrainWatchApp: App {
                     }
                 }
                 .task {
-                    for await signal in timerRuntime.signals() {
-                        switch signal {
-                        case .intervalCompleted:
-                            WKInterfaceDevice.current().play(.notification)
-                        case .sessionCompleted, .sessionCompletedWhileAway:
-                            WKInterfaceDevice.current().play(.success)
-                        case .sessionRestored:
-                            break
-                        }
-                    }
+                    await WatchNotification.realize(intents: timerRuntime.intents())
                 }
                 .task {
                     for await status in timerRuntime.statuses {

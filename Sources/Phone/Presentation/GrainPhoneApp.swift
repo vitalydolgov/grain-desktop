@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 import GrainApplication
 import GrainComponents
 
@@ -29,7 +28,7 @@ struct GrainPhoneApp: App {
                     if let plan = settings.configuration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
-                    NotificationService.requestAuthorization()
+                    try? await PhoneNotification.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(from: saved)
@@ -45,23 +44,7 @@ struct GrainPhoneApp: App {
                     }
                 }
                 .task {
-                    for await signal in timerRuntime.signals() {
-                        switch signal {
-                        case .intervalCompleted(let idx):
-                            UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                            let plan = timerRuntime.plan
-                            guard idx.index < plan.intervals.count else { break }
-                            NotificationService.notifyPhaseCompleted(tag: plan.intervals[idx.index].tag)
-                        case .sessionCompleted:
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                            NotificationService.notifySessionCompleted()
-                        case .sessionCompletedWhileAway:
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                            NotificationService.notifySessionCompleted(whileAway: true)
-                        case .sessionRestored:
-                            NotificationService.notifyStateRecovered()
-                        }
-                    }
+                    await PhoneNotification.realize(intents: timerRuntime.intents())
                 }
         }
     }

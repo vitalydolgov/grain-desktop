@@ -11,15 +11,6 @@ public extension Font {
     }
 }
 
-public extension IntervalTag {
-    var label: String {
-        switch self {
-        case .a: "Focus"
-        case .b: "Break"
-        }
-    }
-}
-
 public enum TimerFace: Equatable {
     case ready
     case active(IntervalTag)
@@ -36,7 +27,8 @@ public enum TimerFace: Equatable {
     public var label: String {
         switch self {
         case .ready: "Ready"
-        case .active(let tag): tag.label
+        case .active(.a): "Focus"
+        case .active(.b): "Break"
         }
     }
 }

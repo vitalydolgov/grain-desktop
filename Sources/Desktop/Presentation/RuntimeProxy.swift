@@ -38,6 +38,10 @@ final class RuntimeProxy {
         runtime.signals
     }
 
+    func intents() -> AsyncStream<NotificationIntent> {
+        runtime.intents
+    }
+
     func runtimeStates() async -> AsyncStream<RuntimeState> {
         await runtime.makeRuntimeStateStream()
     }

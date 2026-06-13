@@ -78,7 +78,7 @@ private struct PhaseKey: View {
             RoundedRectangle(cornerRadius: 2)
                 .fill(theme.splitBarTheme.color(for: tag))
                 .frame(width: dotSize, height: dotSize)
-            Text(tag.label)
+            Text(tag == .a ? "Focus" : "Break")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
