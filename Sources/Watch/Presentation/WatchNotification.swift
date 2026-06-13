@@ -4,7 +4,6 @@ import GrainApplication
 @MainActor
 enum WatchNotification: NotificationHandling {
     static func requestAuthorization() {}
-    static func beep() {}
 
     static func realize(intents: AsyncStream<NotificationIntent>) async {
         for await intent in intents {

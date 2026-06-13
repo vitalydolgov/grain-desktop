@@ -5,7 +5,6 @@ import GrainApplication
 protocol NotificationHandling {
     static func requestAuthorization() async throws
     static func realize(intents: AsyncStream<NotificationIntent>) async
-    static func beep()
 }
 
 private final class ForegroundPresenter: NSObject, UNUserNotificationCenterDelegate {

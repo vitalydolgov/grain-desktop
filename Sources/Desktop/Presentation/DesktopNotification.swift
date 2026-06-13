@@ -8,9 +8,9 @@ enum DesktopNotification: NotificationHandling {
         for await intent in intents {
             switch intent {
             case .intervalCompleted(let tag):
-                send(title: "\(tag == .a ? "Focus" : "Break") completed")
+                send(title: "\(tag == .a ? "Focus" : "Break") completed", sound: beep)
             case .sessionCompleted:
-                send(title: "Session completed")
+                send(title: "Session completed", sound: beep)
             case .sessionCompletedWhileAway:
                 send(title: "Session completed", body: "Timer ran out while away")
             case .sessionRestored:
@@ -19,11 +19,15 @@ enum DesktopNotification: NotificationHandling {
         }
     }
 
-    private static func send(title: String, body: String? = nil) {
+    private static var beep: UNNotificationSound {
+        UNNotificationSound(named: UNNotificationSoundName(rawValue: "beep.wav"))
+    }
+
+    private static func send(title: String, body: String? = nil, sound: UNNotificationSound? = .default) {
         let content = UNMutableNotificationContent()
         content.title = title
         if let body { content.body = body }
-        content.sound = .default
+        content.sound = sound
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,

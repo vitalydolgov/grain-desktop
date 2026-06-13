@@ -1,9 +1,11 @@
 import SwiftUI
+import GrainDomain
 import GrainApplication
 import GrainComponents
 
 @main
 struct GrainPhoneApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var settings = AppSettings(
         plan: PlanSettings(store: UserDefaultsPlanSettingsStore()),
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
@@ -19,9 +21,14 @@ struct GrainPhoneApp: App {
                 .appTheme(theme)
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()
+                    syncNotifications()
                 }
                 .onChange(of: timerRuntime.currentIndex.index) { _, _ in
                     saveRuntimeState()
+                    syncNotifications()
+                }
+                .onChange(of: scenePhase) { _, _ in
+                    syncNotifications()
                 }
                 .task {
                     await settings.load()
@@ -29,6 +36,7 @@ struct GrainPhoneApp: App {
                         timerRuntime.setPlan(plan)
                     }
                     try? await PhoneNotification.requestAuthorization()
+                    PhoneNotificationScheduler.cancel()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(from: saved)
@@ -46,6 +54,19 @@ struct GrainPhoneApp: App {
                 .task {
                     await PhoneNotification.realize(intents: timerRuntime.intents())
                 }
+        }
+    }
+
+    /// Foreground completions play a sound live, so OS notifications are scheduled only while away.
+    private func syncNotifications() {
+        if timerRuntime.status == .running, scenePhase != .active {
+            PhoneNotificationScheduler.schedule(
+                plan: timerRuntime.plan,
+                from: timerRuntime.currentIndex,
+                remaining: timerRuntime.remainingTime
+            )
+        } else {
+            PhoneNotificationScheduler.cancel()
         }
     }
 

@@ -1,6 +1,5 @@
-import AVFoundation
-import UIKit
 import UserNotifications
+import AudioToolbox
 import GrainApplication
 
 @MainActor
@@ -8,12 +7,10 @@ enum PhoneNotification: NotificationHandling {
     static func realize(intents: AsyncStream<NotificationIntent>) async {
         for await intent in intents {
             switch intent {
-            case .intervalCompleted:
-                beep()
-            case .sessionCompleted:
+            case .intervalCompleted, .sessionCompleted:
                 beep()
             case .sessionCompletedWhileAway:
-                send(title: "Session completed", body: "Timer ran out while away")
+                break
             case .sessionRestored:
                 send(title: "Session restored", body: "Timer has been fast-forwarded")
             }
@@ -31,5 +28,13 @@ enum PhoneNotification: NotificationHandling {
             trigger: nil
         )
         UNUserNotificationCenter.current().add(request)
+    }
+
+    private static func beep() {
+        guard let url = Bundle.main.url(forResource: "beep", withExtension: "wav")
+        else { preconditionFailure("beep.wav missing from bundle") }
+        var soundID: SystemSoundID = 0
+        AudioServicesCreateSystemSoundID(url as CFURL, &soundID)
+        AudioServicesPlayAlertSound(soundID)
     }
 }
