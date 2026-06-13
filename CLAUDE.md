@@ -10,7 +10,7 @@ An interval timer that alternates between focus and break phases on a repeating 
 - **Three clients** — macOS, iOS, and watchOS apps sharing one design language, each adapted to its platform
 - **Phone–watch sync** — the watch can mirror and remote-control a running phone session
 - **Session persistence** — quitting the app or restarting the device doesn't lose your session; running timers fast-forward through downtime on next launch, paused timers resume at the exact elapsed time
-- **Completion alerts** — every phase and session end is announced: a system notification on desktop, a haptic tap on watch and phone
+- **Completion alerts** — every phase and session end is announced: a system notification on desktop, a haptic tap on watch and phone; alerts are driven by notification intents — semantic events the runtime derives from signals and the active plan
 
 ## Architecture
 
@@ -22,13 +22,13 @@ flowchart TD
     DProxy[["Runtime Proxy<br/><i>@MainActor</i>"]]
     DP --> DProxy
     DProxy --> DGrain
-    DGrain -.->|state, signals| DProxy
+    DGrain -.->|state, signals, intents| DProxy
 
     S("Settings<br/><i>UserDefaults</i>")
     DP --> S
 
     N(["Notifications"])
-    DP -.->|signals| N
+    DP -.->|intents| N
 
     DGrain["<b>Grain</b><br/><i>Runtime</i>"]
 ```
@@ -55,11 +55,12 @@ Each **Presentation** is built on its own Grain runtime (**Application** and **D
 
 #### Runtime streams
 
-Each `RuntimeProxy` drives one stream into the Grain runtime and reads two back:
+Each `RuntimeProxy` drives one stream into the Grain runtime and reads three back:
 
 - **Commands** — the actions the UI issues, which the proxy applies to the runtime; on the phone these also arrive remotely from the watch
 - **States** — a fresh snapshot after every change, which every proxy unpacks to keep its observable properties in sync
-- **Signals** — discrete lifecycle events the presentation layer reacts to without polling: desktop notifications, watch and phone haptics
+- **Signals** — discrete lifecycle events carrying raw domain data (interval index, session status)
+- **Intents** — notification intents derived from signals: the runtime resolves each signal against the active plan to produce a semantic event ready for the presentation layer to act on directly
 
 ### Synchronization
 
