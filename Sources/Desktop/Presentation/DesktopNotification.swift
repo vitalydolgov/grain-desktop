@@ -4,18 +4,16 @@ import GrainApplication
 
 @MainActor
 enum DesktopNotification: NotificationHandling {
-    static func realize(intents: AsyncStream<NotificationIntent>) async {
-        for await intent in intents {
-            switch intent {
-            case .intervalCompleted(let tag):
-                send(title: "\(tag == .a ? "Focus" : "Break") completed", sound: beep)
-            case .sessionCompleted:
-                send(title: "Session completed", sound: beep)
-            case .sessionCompletedWhileAway:
-                send(title: "Session completed", body: "Timer ran out while away")
-            case .sessionRestored:
-                send(title: "Session restored", body: "Timer has been fast-forwarded")
-            }
+    static func realize(intent: NotificationIntent) {
+        switch intent {
+        case .intervalCompleted(let tag):
+            send(title: "\(tag == .a ? "Focus" : "Break") completed", sound: beep)
+        case .sessionCompleted:
+            send(title: "Session completed", sound: beep)
+        case .sessionCompletedWhileAway:
+            send(title: "Session completed", body: "Timer ran out while away")
+        case .sessionRestored:
+            send(title: "Session restored", body: "Timer has been fast-forwarded")
         }
     }
 

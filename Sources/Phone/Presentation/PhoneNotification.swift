@@ -4,16 +4,14 @@ import GrainApplication
 
 @MainActor
 enum PhoneNotification: NotificationHandling {
-    static func realize(intents: AsyncStream<NotificationIntent>) async {
-        for await intent in intents {
-            switch intent {
-            case .intervalCompleted, .sessionCompleted:
-                beep()
-            case .sessionCompletedWhileAway:
-                break
-            case .sessionRestored:
-                send(title: "Session restored", body: "Timer has been fast-forwarded")
-            }
+    static func realize(intent: NotificationIntent) {
+        switch intent {
+        case .intervalCompleted, .sessionCompleted:
+            beep()
+        case .sessionCompletedWhileAway:
+            break
+        case .sessionRestored:
+            send(title: "Session restored", body: "Timer has been fast-forwarded")
         }
     }
 

@@ -34,7 +34,9 @@ struct GrainDesktopApp: App {
                     }
                 }
                 .task {
-                    await DesktopNotification.realize(intents: timerRuntime.intents())
+                    for await intent in timerRuntime.intents() {
+                        DesktopNotification.realize(intent: intent)
+                    }
                 }
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()

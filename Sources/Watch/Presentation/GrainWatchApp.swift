@@ -37,7 +37,9 @@ struct GrainWatchApp: App {
                     }
                 }
                 .task {
-                    await WatchNotification.realize(intents: timerRuntime.intents())
+                    for await intent in timerRuntime.intents() {
+                        WatchNotification.realize(intent: intent)
+                    }
                 }
                 .task {
                     for await status in timerRuntime.statuses {

@@ -4,7 +4,7 @@ import GrainApplication
 @MainActor
 protocol NotificationHandling {
     static func requestAuthorization() async throws
-    static func realize(intents: AsyncStream<NotificationIntent>) async
+    static func realize(intent: NotificationIntent)
 }
 
 private final class ForegroundPresenter: NSObject, UNUserNotificationCenterDelegate {
@@ -13,7 +13,7 @@ private final class ForegroundPresenter: NSObject, UNUserNotificationCenterDeleg
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound])
+        completionHandler([.banner, .sound, .list])
     }
 }
 

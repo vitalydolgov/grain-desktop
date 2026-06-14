@@ -11,7 +11,6 @@ struct GrainPhoneApp: App {
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
-    @State private var liveActivity = LiveActivity()
     @State private var theme = AppTheme(PhoneThemeFactory())
 
     var body: some Scene {
@@ -37,7 +36,7 @@ struct GrainPhoneApp: App {
                         timerRuntime.setPlan(plan)
                     }
                     try? await PhoneNotification.requestAuthorization()
-                    PhoneNotificationScheduler.cancel()
+                    PhoneNotificationScheduler.cancelAll()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(from: saved)
@@ -53,23 +52,13 @@ struct GrainPhoneApp: App {
                     }
                 }
                 .task {
-                    await PhoneNotification.realize(intents: timerRuntime.intents())
-                }
-                .task {
-                    var lastKey = ""
-                    for await state in await timerRuntime.runtimeStates() {
-                        let key = "\(state.timer.status)-\(state.timer.currentIndex.index)"
-                        guard key != lastKey else { continue }
-                        lastKey = key
-                        var copy = liveActivity
-                        await copy.update(from: state)
-                        liveActivity = copy
+                    for await intent in timerRuntime.intents() {
+                        PhoneNotification.realize(intent: intent)
                     }
                 }
         }
     }
 
-    /// Foreground completions play a sound live, so OS notifications are scheduled only while away.
     private func syncNotifications() {
         if timerRuntime.status == .running, scenePhase != .active {
             PhoneNotificationScheduler.schedule(
@@ -78,7 +67,7 @@ struct GrainPhoneApp: App {
                 remaining: timerRuntime.remainingTime
             )
         } else {
-            PhoneNotificationScheduler.cancel()
+            PhoneNotificationScheduler.cancelAll()
         }
     }
 
