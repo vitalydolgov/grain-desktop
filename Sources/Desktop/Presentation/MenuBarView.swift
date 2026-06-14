@@ -6,7 +6,7 @@ struct MenuBarView: View {
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
-        switch settings.preferences.menuBarMode {
+        switch settings.displayConfiguration.menuBarMode {
         case .time:
             Text(format(timerRuntime.remainingTime))
         case .minutes:

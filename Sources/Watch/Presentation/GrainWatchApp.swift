@@ -27,7 +27,7 @@ struct GrainWatchApp: App {
                 .appTheme(theme)
                 .task {
                     await settings.load()
-                    if let plan = settings.configuration.makePlan() {
+                    if let plan = settings.planConfiguration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
                 }

@@ -5,6 +5,7 @@ import GrainComponents
 
 struct TimerView: View {
     @Environment(RuntimeProxy.self) private var timerRuntime
+    @Environment(AppSettings.self) private var settings
     @Environment(\.colorScheme) private var colorScheme
     @State private var showingSettings = false
 
@@ -76,7 +77,11 @@ struct TimerView: View {
 
     private func format(_ duration: Duration) -> String {
         let total = duration.seconds
-        return String(format: "%02d:%02d", total / 60, total % 60)
+        let minutes = total / 60
+        if settings.hidesSeconds {
+            return String(format: "%02d:--", minutes)
+        }
+        return String(format: "%02d:%02d", minutes, total % 60)
     }
 }
 

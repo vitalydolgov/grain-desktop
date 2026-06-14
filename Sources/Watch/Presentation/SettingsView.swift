@@ -6,7 +6,7 @@ import GrainComponents
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @State private var configuration = PlanConfiguration.default
+    @State private var planConfiguration = PlanConfiguration.default
 
     var body: some View {
         List {
@@ -15,37 +15,37 @@ struct SettingsView: View {
                     ValuePicker(title: "Total",
                                 values: Array(stride(from: 40, through: 240, by: 5)),
                                 unit: "min",
-                                amount: $configuration.totalMinutes)
+                                amount: $planConfiguration.totalMinutes)
                 } label: {
-                    SettingRow(title: "Total", value: "\(configuration.totalMinutes) min")
+                    SettingRow(title: "Total", value: "\(planConfiguration.totalMinutes) min")
                 }
                 Toggle("Skip final break", isOn: Binding(
-                    get: { !configuration.endWithB },
-                    set: { configuration.endWithB = !$0 }
+                    get: { !planConfiguration.endWithB },
+                    set: { planConfiguration.endWithB = !$0 }
                 ))
                 .disabled(!canToggleEndMode)
             }
             Section {
-                if let plan = configuration.makePlan() {
+                if let plan = planConfiguration.makePlan() {
                     SplitPlanner(plan: plan)
                 }
             }
         }
         .navigationTitle("Plan")
-        .onChange(of: settings.configuration, initial: true) {
-            configuration = settings.configuration
+        .onChange(of: settings.planConfiguration, initial: true) {
+            planConfiguration = settings.planConfiguration
         }
-        .onChange(of: configuration) {
-            if configuration.isFeasible {
-                saveConfiguration(configuration)
-            } else if let alternative = feasibleAlternative(for: configuration) {
-                configuration = alternative
+        .onChange(of: planConfiguration) {
+            if planConfiguration.isFeasible {
+                saveConfiguration(planConfiguration)
+            } else if let alternative = feasibleAlternative(for: planConfiguration) {
+                planConfiguration = alternative
             }
         }
     }
 
     private var canToggleEndMode: Bool {
-        configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
+        planConfiguration.canPlan(endWithB: true) && planConfiguration.canPlan(endWithB: false)
     }
 
     private func feasibleAlternative(for configuration: PlanConfiguration) -> PlanConfiguration? {
@@ -54,11 +54,11 @@ struct SettingsView: View {
     }
 
     private func saveConfiguration(_ configuration: PlanConfiguration) {
-        guard configuration != settings.configuration else { return }
+        guard configuration != settings.planConfiguration else { return }
         if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
-        settings.configuration = configuration
+        settings.planConfiguration = configuration
         Task { await settings.save() }
     }
 }

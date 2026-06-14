@@ -8,11 +8,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @State private var configuration = PlanConfiguration.default
-
-    private var theme: PhaseTheme {
-        .idle(colorScheme)
-    }
+    @State private var planConfiguration = PlanConfiguration.default
 
     var body: some View {
         ZStack {
@@ -25,36 +21,48 @@ struct SettingsView: View {
                 TotalCard(theme: theme,
                           range: 40...240,
                           step: 5,
-                          minutes: $configuration.totalMinutes)
+                          minutes: $planConfiguration.totalMinutes)
 
                 SkipBreakCard(theme: theme, enabled: canToggleEndMode, skip: Binding(
-                    get: { !configuration.endWithB },
-                    set: { configuration.endWithB = !$0 }
+                    get: { !planConfiguration.endWithB },
+                    set: { planConfiguration.endWithB = !$0 }
                 ))
 
-                if let plan = configuration.makePlan() {
+                if let plan = planConfiguration.makePlan() {
                     PlanPreviewCard(plan: plan, theme: theme)
                 }
+
+                KeepScreenOnCard(theme: theme, keepScreenOn: Binding(
+                    get: { settings.displayConfiguration.keepScreenOn },
+                    set: { settings.displayConfiguration.keepScreenOn = $0 }
+                ))
 
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 28)
             .padding(.top, 28)
         }
-        .onChange(of: settings.configuration, initial: true) {
-            configuration = settings.configuration
+        .onChange(of: settings.planConfiguration, initial: true) {
+            planConfiguration = settings.planConfiguration
         }
-        .onChange(of: configuration) {
-            if configuration.isFeasible {
-                saveConfiguration(configuration)
-            } else if let alternative = feasibleAlternative(for: configuration) {
-                configuration = alternative
+        .onChange(of: planConfiguration) {
+            if planConfiguration.isFeasible {
+                saveConfiguration(planConfiguration)
+            } else if let alternative = feasibleAlternative(for: planConfiguration) {
+                planConfiguration = alternative
             }
+        }
+        .onChange(of: settings.displayConfiguration.keepScreenOn) {
+            Task { await settings.savePreferences() }
         }
     }
 
+    private var theme: PhaseTheme {
+        .idle(colorScheme)
+    }
+
     private var canToggleEndMode: Bool {
-        configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false)
+        planConfiguration.canPlan(endWithB: true) && planConfiguration.canPlan(endWithB: false)
     }
 
     private func feasibleAlternative(for configuration: PlanConfiguration) -> PlanConfiguration? {
@@ -63,11 +71,11 @@ struct SettingsView: View {
     }
 
     private func saveConfiguration(_ configuration: PlanConfiguration) {
-        guard configuration != settings.configuration else { return }
+        guard configuration != settings.planConfiguration else { return }
         if let plan = configuration.makePlan() {
             timerRuntime.setPlan(plan)
         }
-        settings.configuration = configuration
+        settings.planConfiguration = configuration
         Task { await settings.save() }
     }
 }
@@ -204,6 +212,23 @@ private struct SkipBreakCard: View {
                     .font(.customRegular(size: 13))
                     .foregroundStyle(theme.labelColor)
                 }
+            }
+        }
+    }
+}
+
+private struct KeepScreenOnCard: View {
+    let theme: PhaseTheme
+    @Binding var keepScreenOn: Bool
+
+    var body: some View {
+        Card(theme: theme) {
+            HStack {
+                Text("Keep screen on")
+                    .font(.customRegular(size: 17))
+                    .foregroundStyle(theme.timerTextColor)
+                Spacer()
+                PillToggle(theme: theme, isOn: $keepScreenOn)
             }
         }
     }

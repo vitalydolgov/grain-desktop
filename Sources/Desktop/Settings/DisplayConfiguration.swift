@@ -4,8 +4,8 @@ enum MenuBarMode: String, Codable, CaseIterable, Sendable {
     case icon
 }
 
-struct DisplayPreferences: Codable, Sendable, Equatable {
+struct DisplayConfiguration: Codable, Sendable, Equatable {
     var menuBarMode: MenuBarMode
 
-    static let `default` = DisplayPreferences(menuBarMode: .icon)
+    static let `default` = DisplayConfiguration(menuBarMode: .icon)
 }

@@ -3,8 +3,8 @@ import Observation
 // MARK: Stores
 
 protocol DisplaySettingsStore: Sendable {
-    func load() async throws -> DisplayPreferences?
-    func save(_ preferences: DisplayPreferences) async throws
+    func load() async throws -> DisplayConfiguration?
+    func save(_ preferences: DisplayConfiguration) async throws
 }
 
 // MARK: Facades
@@ -16,7 +16,7 @@ struct DisplaySettings: Sendable {
         self.store = store
     }
 
-    func load() async -> DisplayPreferences {
+    func load() async -> DisplayConfiguration {
         do {
             return try await store.load() ?? .default
         } catch {
@@ -24,7 +24,7 @@ struct DisplaySettings: Sendable {
         }
     }
 
-    func save(_ preferences: DisplayPreferences) async throws {
+    func save(_ preferences: DisplayConfiguration) async throws {
         try await store.save(preferences)
     }
 }
@@ -37,11 +37,15 @@ final class AppSettings {
     let plan: PlanSettings
     let display: DisplaySettings
     let runtimeState: RuntimeStateSettings
-    var preferences: DisplayPreferences = .default
+    var displayConfiguration: DisplayConfiguration = .default
 
     init(plan: PlanSettings, display: DisplaySettings, runtimeState: RuntimeStateSettings) {
         self.plan = plan
         self.display = display
         self.runtimeState = runtimeState
+    }
+
+    func load() async {
+        displayConfiguration = await display.load()
     }
 }

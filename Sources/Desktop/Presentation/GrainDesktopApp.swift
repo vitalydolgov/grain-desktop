@@ -26,7 +26,7 @@ struct GrainDesktopApp: App {
                     if let plan = await settings.plan.load().makePlan() {
                         timerRuntime.plan = plan
                     }
-                    settings.preferences = await settings.display.load()
+                    await settings.load()
                     try? await DesktopNotification.requestAuthorization()
                     if let saved = await settings.runtimeState.load() {
                         await settings.runtimeState.clear()

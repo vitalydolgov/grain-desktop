@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
-    @State private var preferences = DisplayPreferences.default
+    @State private var displayConfiguration = DisplayConfiguration.default
 
     var body: some View {
         TabView {
@@ -10,20 +10,20 @@ struct SettingsView: View {
                 .tabItem { Label("Plan", systemImage: "timer") }
 
             SettingsAppearanceTab(
-                menuBarFormat: $preferences.menuBarMode
+                menuBarFormat: $displayConfiguration.menuBarMode
             )
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
         }
         .frame(width: 300, height: 300)
         .background(FloatingWindowConfigurator(keepOnTop: true))
-        .task { preferences = settings.preferences }
-        .onChange(of: preferences) { saveDisplay() }
+        .task { displayConfiguration = settings.displayConfiguration }
+        .onChange(of: displayConfiguration) { saveDisplay() }
     }
 
     private func saveDisplay() {
-        settings.preferences = preferences
+        settings.displayConfiguration = displayConfiguration
         Task {
-            try? await settings.display.save(preferences)
+            try? await settings.display.save(displayConfiguration)
         }
     }
 }

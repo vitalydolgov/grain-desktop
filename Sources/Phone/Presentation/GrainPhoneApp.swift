@@ -8,6 +8,7 @@ struct GrainPhoneApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var settings = AppSettings(
         plan: PlanSettings(store: UserDefaultsPlanSettingsStore()),
+        display: DisplaySettings(store: UserDefaultsDisplaySettingsStore()),
         runtimeState: RuntimeStateSettings(store: UserDefaultsRuntimeStateStore())
     )
     @State private var timerRuntime = RuntimeProxy()
@@ -22,17 +23,22 @@ struct GrainPhoneApp: App {
                 .onChange(of: timerRuntime.status) { _, _ in
                     saveRuntimeState()
                     syncNotifications()
+                    syncIdleTimer()
                 }
                 .onChange(of: timerRuntime.currentIndex.index) { _, _ in
                     saveRuntimeState()
                     syncNotifications()
                 }
+                .onChange(of: settings.keepScreenOn) { _, _ in
+                    syncIdleTimer()
+                }
                 .onChange(of: scenePhase) { _, _ in
                     syncNotifications()
+                    syncIdleTimer()
                 }
                 .task {
                     await settings.load()
-                    if let plan = settings.configuration.makePlan() {
+                    if let plan = settings.planConfiguration.makePlan() {
                         timerRuntime.setPlan(plan)
                     }
                     try? await PhoneNotification.requestAuthorization()
@@ -41,6 +47,7 @@ struct GrainPhoneApp: App {
                         await settings.runtimeState.clear()
                         timerRuntime.restore(from: saved)
                     }
+                    syncIdleTimer()
                 }
                 .task {
                     let relay = RuntimeStateRelay(publisher: RuntimeConnectivity.statePublisher)
@@ -69,6 +76,10 @@ struct GrainPhoneApp: App {
         } else {
             PhoneNotificationScheduler.cancelAll()
         }
+    }
+
+    private func syncIdleTimer() {
+        UIApplication.shared.isIdleTimerDisabled = settings.keepScreenOn && timerRuntime.status == .running
     }
 
     private func saveRuntimeState() {

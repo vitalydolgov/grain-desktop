@@ -5,17 +5,17 @@ import GrainComponents
 struct SettingsPlanTab: View {
     @Environment(AppSettings.self) private var settings
     @Environment(RuntimeProxy.self) private var timerRuntime
-    @State private var configuration = PlanConfiguration.default
+    @State private var planConfiguration = PlanConfiguration.default
 
     var body: some View {
         Form {
             Section {
-                Stepper("Total: \(configuration.totalMinutes) min",
-                        value: $configuration.totalMinutes, in: 40...240, step: 5)
+                Stepper("Total: \(planConfiguration.totalMinutes) min",
+                        value: $planConfiguration.totalMinutes, in: 40...240, step: 5)
                 VStack(alignment: .leading, spacing: 4) {
                     Toggle("Skip final break", isOn: Binding(
-                        get: { !configuration.endWithB },
-                        set: { configuration.endWithB = !$0 }
+                        get: { !planConfiguration.endWithB },
+                        set: { planConfiguration.endWithB = !$0 }
                     ))
                     .disabled(toggleLocked)
                     if toggleLocked {
@@ -26,38 +26,38 @@ struct SettingsPlanTab: View {
                 }
             }
             Section {
-                if let plan = configuration.makePlan() {
+                if let plan = planConfiguration.makePlan() {
                     PlanSummary(plan: plan)
                 }
             }
         }
         .formStyle(.grouped)
         .task {
-            configuration = await settings.plan.load()
+            planConfiguration = await settings.plan.load()
             selectFeasibleMode()
         }
-        .onChange(of: configuration.totalMinutes) { selectFeasibleMode() }
-        .onChange(of: configuration) { saveConfiguration() }
+        .onChange(of: planConfiguration.totalMinutes) { selectFeasibleMode() }
+        .onChange(of: planConfiguration) { saveConfiguration() }
     }
 
     private var toggleLocked: Bool {
-        !(configuration.canPlan(endWithB: true) && configuration.canPlan(endWithB: false))
+        !(planConfiguration.canPlan(endWithB: true) && planConfiguration.canPlan(endWithB: false))
     }
 
     private var skipBreakHint: String {
-        configuration.endWithB ? "No optimal split without final break" : "No optimal split with final break"
+        planConfiguration.endWithB ? "No optimal split without final break" : "No optimal split with final break"
     }
 
     private func selectFeasibleMode() {
-        if configuration.canPlan(endWithB: true) {
-            configuration.endWithB = true
-        } else if configuration.canPlan(endWithB: false) {
-            configuration.endWithB = false
+        if planConfiguration.canPlan(endWithB: true) {
+            planConfiguration.endWithB = true
+        } else if planConfiguration.canPlan(endWithB: false) {
+            planConfiguration.endWithB = false
         }
     }
 
     private func saveConfiguration() {
-        let configuration = configuration
+        let configuration = planConfiguration
         Task {
             try? await settings.plan.save(configuration)
             if let plan = configuration.makePlan() {
